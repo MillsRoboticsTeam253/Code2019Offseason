@@ -10,7 +10,7 @@ public class Drive extends Command {
     private double left, right;
     
     public Drive(){
-        
+        requires(Robot.drivetrain);
     }
 
     protected void execute(){

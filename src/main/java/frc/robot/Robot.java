@@ -8,11 +8,17 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.Misc.OI;
 
 public class Robot extends TimedRobot {
 
+  public static Drivetrain drivetrain;
+  public static OI oi;
+
   @Override
   public void robotInit() {
+    drivetrain = Drivetrain.getInstance();
+    oi = OI.getInstance();
   }
 
   @Override

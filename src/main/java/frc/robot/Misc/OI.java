@@ -31,7 +31,7 @@ public class OI {
     private JoystickButton triggerLeft;
     private JoystickButton triggerRight;
 
-    private AHRS navX = new AHRS(Port.kMXP, (byte)200);
+    private static AHRS navX;
 
     private static OI instance = null;
 
@@ -42,6 +42,7 @@ public class OI {
     }
 
     public OI() {
+        navX = new AHRS(Port.kMXP, (byte)200);
         xboxcontroller = new XboxController(0);
 
         ButtonA = new JoystickButton(xboxcontroller, 1);
@@ -75,6 +76,18 @@ public class OI {
 
     public static double getTurnValue() {
         return deadbandX(xboxcontroller.getX(Hand.kRight), Constants.kJoystickDeadband);
+    }
+
+    public static double getGyroDegrees(){
+        return navX.getFusedHeading();
+    }
+
+    public static double getGyroRadians(){
+        double deg = navX.getFusedHeading();
+        while(deg > 360) deg -= 360;
+        while(deg < 0) deg += 360;
+
+        return deg * Math.PI/180.0;
     }
 
     public static double deadbandX(double input, double deadband) {

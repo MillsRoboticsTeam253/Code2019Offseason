@@ -32,7 +32,7 @@ public class Drivetrain extends Subsystem {
     }
 
     public void initDefaultCommand() {
-        //setDefaultCommand();
+        setDefaultCommand(new Drive());
     }
 
     private Drivetrain(){
@@ -87,5 +87,14 @@ public class Drivetrain extends Subsystem {
 
     public static double getRightEnc(){
         return rightMotorA.getSelectedSensorPosition();
+    }
+
+    /* Returns feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels */
+    public static double getLeftFeet(){
+        return ((leftMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
+    }
+
+    public static double getRightFeet(){
+        return ((rightMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
     }
 }
