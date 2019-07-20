@@ -38,11 +38,8 @@ public class TrajectoryTracker extends Command {
      *                 include .csv file ext
      * @param beta     Constant for correction, increase for stronger convergence
      * @param zeta     Constant for dampening, increase for stronger dampening
-     * @param dt       Change in time between each run (must be the same as the
-     *                 path)
      */
-    public TrajectoryTracker(String pathName, double beta, double zeta, double dt) {
-        this.dt = dt;
+    public TrajectoryTracker(String pathName, double beta, double zeta) {
         this.beta = beta;
         this.zeta = zeta;
         
@@ -59,6 +56,23 @@ public class TrajectoryTracker extends Command {
             System.out.println("Path loading failed");
         }
 
+        this.dt = trajec.get(0).dt;
+
+    }
+
+    // Alternate constructor that takes in a Trajectory object instead of a path name and dt
+    public TrajectoryTracker(Trajectory trajec, double beta, double zeta) {
+        this.trajec = trajec;
+        this.beta = beta;
+        this.zeta = zeta;
+        this.dt = trajec.get(0).dt;
+        
+        // Assigning notifier to run the update method of this function
+        notifier = new Notifier(this::update);
+
+        // This command takes control of the drivetrain when run
+        requires(Robot.drivetrain);
+
     }
 
     // When the Command is started, the notifier is delegated to call the update() method at a set time interval
@@ -68,7 +82,7 @@ public class TrajectoryTracker extends Command {
         index = 0;
     }
 
-    // Iterates through the Trajectory at speed set by dt variable, using Ramsete to
+    // Iterates through the Trajectory at intervals of dt, using Ramsete to
     // calculate the proper drivetrain velocities to steer the robot to the path
     private void update() {
         // Gets reference pose from Trajectory Segments
