@@ -101,12 +101,13 @@ public class TrajectoryTracker extends Command {
         double k1 = 2 * zeta * sqrt(wd*wd + beta*vd*vd);
         
         // Calculating linear velocity required to get to Trajectory
-        double v = vd * cos(reference.heading - actual.heading) 
-                + k1*((reference.x - actual.x)*cos(actual.heading) + (reference.y - actual.y)*sin(actual.heading));
+        double v = vd * cos(reference.heading - actual.heading) + k1
+                * ((reference.x - actual.x) * cos(actual.heading) + (reference.y - actual.y) * sin(actual.heading));
 
         // Calculating angular velocity required to get to Trajectory
-        double w = wd + beta*vd*sinc(reference.heading - actual.heading)
-                * ((reference.y - actual.y)*cos(actual.heading) - (reference.x - actual.x)*sin(actual.heading)) + k1*(reference.heading - actual.heading);
+        double w = wd + beta * vd * sinc(boundRadian(reference.heading - actual.heading)
+                * ((reference.y - actual.y) * cos(actual.heading) - (reference.x - actual.x) * sin(actual.heading))
+                + k1 * (boundRadian(reference.heading - actual.heading)));
 
         // Moves index to next segment if there are segments remaining
         if(index < trajec.segments.length-1) index++;
@@ -124,6 +125,7 @@ public class TrajectoryTracker extends Command {
         left = FPStoTicksPerDecisecond(left);
         right = FPStoTicksPerDecisecond(right);
 
+        // Setting drivetrain to speeds in closed loop
         Drivetrain.set(false, left, right);
 
     }
@@ -167,6 +169,17 @@ public class TrajectoryTracker extends Command {
      */
     private double FPStoTicksPerDecisecond(double fps){
         return fps * 12 / (4 * Math.PI) * 1024 / 10;
+    }
+
+    /**
+     * Bounds a radian measure to -pi to pi
+     * @param rad the radian input
+     * @return equivalent angle bounded to the range
+     */
+    private double boundRadian(double rad){
+        while(rad > Math.PI) rad -= 2*Math.PI;
+        while(rad < -Math.PI) rad += 2*Math.PI;
+        return rad;
     }
 
 }
