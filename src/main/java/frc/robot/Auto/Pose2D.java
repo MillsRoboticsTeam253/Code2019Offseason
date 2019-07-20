@@ -1,35 +1,20 @@
 package frc.robot.Auto;
 
+
 public class Pose2D {
-    private double x, y, theta;
+    public double x, y, heading;
 
-    public Pose2D(double x, double y, double theta) {
+    /**
+     * Container class used with {@link TrajectoryTracker} 
+     * 
+     * @param x The x component of pose
+     * @param y The y component of pose
+     * @param theta The heading component of pose
+     */
+    public Pose2D(double x, double y, double heading) {
         this.x = x;
         this.y = y;
-        this.theta = theta;
+        this.heading = heading;
     }
 
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public double getTheta() {
-        return theta;
-    }
-
-    public void setX(double x){
-        this.x = x;
-    }
-
-    public void setY(double y){
-        this.y = y;
-    }
-
-    public void setTheta(double theta){
-        this.theta = theta;
-    }
 }

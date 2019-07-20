@@ -42,7 +42,7 @@ public class OI {
     }
 
     public OI() {
-        navX = new AHRS(Port.kMXP, (byte)200);
+        navX = new AHRS(Port.kMXP, (byte)200); // Overriding navX default update rate with a 200hz update rate
         xboxcontroller = new XboxController(0);
 
         ButtonA = new JoystickButton(xboxcontroller, 1);
@@ -70,7 +70,7 @@ public class OI {
     }
 
     public static double getThrottleValue() {
-        // Controllers y-axes are natively up-negative, down-positive. returns negative
+        // Controllers y-axes are natively up-negative, down-positive. This method corrects that by returning the opposite of the value
         return -deadbandX(xboxcontroller.getY(Hand.kLeft), Constants.kJoystickDeadband);
     }
 
@@ -89,7 +89,7 @@ public class OI {
 
         return deg * Math.PI/180.0;
     }
-
+    
     public static double deadbandX(double input, double deadband) {
         if (Math.abs(input) <= deadband) {
             return 0;

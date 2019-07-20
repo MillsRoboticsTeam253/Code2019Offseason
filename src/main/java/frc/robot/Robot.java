@@ -19,10 +19,13 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     drivetrain = Drivetrain.getInstance();
     oi = OI.getInstance();
+    
   }
 
+  // Begins odometry when autonomous mode is initialized, updating at 100Hz
   @Override
   public void autonomousInit() {
+    drivetrain.odometry.start(0.01);
   }
 
   @Override
