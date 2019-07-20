@@ -83,11 +83,10 @@ public class OI {
     }
 
     public static double getGyroRadians(){
-        double deg = navX.getFusedHeading();
-        while(deg > 360) deg -= 360;
-        while(deg < 0) deg += 360;
+        double rad = navX.getFusedHeading() * Math.PI/180.0;
+        rad = -rad; // Making the angle measurement CCW Positive (navX natively CW Positive)
 
-        return deg * Math.PI/180.0;
+        return rad;
     }
     
     public static double deadbandX(double input, double deadband) {
