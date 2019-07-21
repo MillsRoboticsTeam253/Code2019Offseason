@@ -1,7 +1,7 @@
 package frc.robot.Auto;
 
-import edu.wpi.first.wpilibj.Notifier;
 import frc.robot.Drivetrain;
+import frc.robot.Robot;
 import frc.robot.Misc.OI;
 
 public class EncoderOdom implements Runnable {
@@ -9,24 +9,11 @@ public class EncoderOdom implements Runnable {
     private double lastLeft;
     private double lastRight;
 
-    private Notifier notifier;
-
     /**
      * Runnable class used to update the robot's pose asynchronously from the main robot loop
      */
     public EncoderOdom() {
         pose = new Pose2D(0, 0, 0);
-        notifier = new Notifier(this);
-    }
-
-    // When this method is called, the notifier begins to update the pose
-    public void start(double dt){
-        notifier.startPeriodic(dt);
-    }
-
-    // When this method is called, the notifier stops updating pose
-    public void stop(){
-        notifier.stop();
     }
 
     // Resets pose to zero
@@ -36,10 +23,10 @@ public class EncoderOdom implements Runnable {
         pose = new Pose2D(0, 0, 0);
     }
 
-    // Sets initial distance traveled offset
-    public void setup() {
-        lastLeft = Drivetrain.getLeftFeet();
-        lastRight = Drivetrain.getRightFeet();
+    // Sets initial position offset
+    public void setup(double offsetX, double offsetY) {
+        pose.x = offsetX;
+        pose.y = offsetY;
     }
 
     public void run() {
@@ -58,6 +45,8 @@ public class EncoderOdom implements Runnable {
         pose.x = pose.x + vel * Math.cos(OI.getGyroRadians());
         pose.y = pose.y + vel * Math.sin(OI.getGyroRadians());
         pose.heading = OI.getGyroRadians();
+
+        Robot.falcondashboard.putOdom(pose.x, pose.y, pose.heading);
 
     }
 

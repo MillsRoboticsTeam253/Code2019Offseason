@@ -8,28 +8,38 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import frc.robot.Auto.LiveDashboard;
 import frc.robot.Misc.OI;
 
 public class Robot extends TimedRobot {
 
   public static Drivetrain drivetrain;
+  public static LiveDashboard falcondashboard;
   public static OI oi;
 
   @Override
   public void robotInit() {
     drivetrain = Drivetrain.getInstance();
     oi = OI.getInstance();
+
+    falcondashboard = new LiveDashboard();
     
   }
 
-  // Begins odometry when autonomous mode is initialized, updating at 100Hz
   @Override
   public void autonomousInit() {
-    drivetrain.odometry.start(0.01);
+    // Figure out starting position and use that to set the offset
+    drivetrain.odometry.clear();
+    drivetrain.resetEncoders();
+    falcondashboard.setup();
+    
   }
 
   @Override
   public void autonomousPeriodic() {
+    // Updating robot pose using odometry
+    drivetrain.odometry.run(); 
+
   }
 
   @Override

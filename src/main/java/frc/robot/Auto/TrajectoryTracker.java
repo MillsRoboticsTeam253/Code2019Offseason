@@ -3,7 +3,6 @@ package frc.robot.Auto;
 import java.io.File;
 import java.io.IOException;
 
-import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Drivetrain;
 import frc.robot.Robot;
@@ -18,7 +17,6 @@ import static java.lang.Math.sqrt;
 
 public class TrajectoryTracker extends Command {
 
-    private Notifier notifier;
     private Trajectory trajec;
 
     private double dt;
@@ -42,9 +40,6 @@ public class TrajectoryTracker extends Command {
     public TrajectoryTracker(String pathName, double beta, double zeta) {
         this.beta = beta;
         this.zeta = zeta;
-        
-        // Assigning notifier to run the update method of this function
-        notifier = new Notifier(this::update);
 
         // This command takes control of the drivetrain when run
         requires(Robot.drivetrain);
@@ -66,32 +61,29 @@ public class TrajectoryTracker extends Command {
         this.beta = beta;
         this.zeta = zeta;
         this.dt = trajec.get(0).dt;
-        
-        // Assigning notifier to run the update method of this function
-        notifier = new Notifier(this::update);
 
         // This command takes control of the drivetrain when run
         requires(Robot.drivetrain);
 
     }
 
-    // When the Command is started, the notifier is delegated to call the update() method at a set time interval
-    // The Trajectory index is reset
+    // When the Command is started, the trajectory segment index is reset to zero
     protected void initialize() {
-        notifier.startPeriodic(dt);
         index = 0;
     }
 
     // Iterates through the Trajectory at intervals of dt, using Ramsete to
     // calculate the proper drivetrain velocities to steer the robot to the path
-    private void update() {
+    protected void execute() {
         // Gets reference pose from Trajectory Segments
         Segment reference = trajec.get(index);
         // Retrieving current pose from EncoderOdom class
         Pose2D actual = EncoderOdom.getPose();
 
-        /* Ramsete formulas */
+        /* FalconDashboard visualization */
+        Robot.falcondashboard.putPath(reference.x, reference.y, reference.heading);
 
+        /* Ramsete formulas */
         double vd = reference.velocity;
         // Deriving reference angular velocity using calculus uwu
         double wd = index == 0 ? reference.velocity * (reference.heading) / dt
@@ -136,9 +128,9 @@ public class TrajectoryTracker extends Command {
         return index == trajec.segments.length - 1;
     }
 
-    // When isFinished() returns true, the notifier will stop running
+    // When isFinished() returns true, the command will stop running and the drivetrain will be set to stop
     protected void end() {
-        notifier.stop();
+        Drivetrain.set(false, 0.0, 0.0);
     }
 
     /**
