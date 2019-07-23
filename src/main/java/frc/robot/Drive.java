@@ -42,6 +42,7 @@ public class Drive extends Command {
                 SmartDashboard.putNumber("right", right);
 
                 Drivetrain.set(true, left, right);
+		break;
             case CheesyDrive:
                 
                 if (throttle != 0) {
@@ -57,7 +58,9 @@ public class Drive extends Command {
                 }
 
                 Drivetrain.set(false, left, right);
-
+		break;
+	default:
+        	Drivetrain.set(true, 0, 0);
         }
         
     }
