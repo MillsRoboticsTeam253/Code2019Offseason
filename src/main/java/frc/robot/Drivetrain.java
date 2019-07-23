@@ -39,7 +39,7 @@ public class Drivetrain extends Subsystem {
 
     // Will run the {@link Drive} Command when the subsystem is not otherwise being used
     public void initDefaultCommand() {
-        setDefaultCommand(new Drive());
+        setDefaultCommand(new Drive(Drive.State.CheesyDrive));
     }
 
     private Drivetrain(){

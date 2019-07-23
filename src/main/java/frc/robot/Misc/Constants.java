@@ -7,7 +7,7 @@ public class Constants {
     /* Auto Settings */
     public static final double wheelbase = 1.583333333; // Wheelbase in feet
 
-    /* Driver Settings */
+    /* Differential Drive Settings */
     public static final double kJoystickDeadband = 0.03; // Number between 0 and 1 representing how much of joystick is "dead" zone
     public static final double kTriggerDeadband = 0.05; // Number between 0 and 1 representing how much of trigger is "dead" zone
 
@@ -15,6 +15,10 @@ public class Constants {
     public static final double kDriveSens = 1; // Overall speed setting (turn down for demos)
     public static final double kTurnInPlaceSens = 0.8; // Maximum turn-in-place rate (in percent of max) to allow robot to turn to, b/t 0 and 1
 
+    /* Cheesydrive Settings */
+    public static final double kCurvatureScale = 30; // Turnrate in degrees/sec
+    public static final double kV = 1.0; // Minimum voltage required to overcome static friction
+    public static final double kTopSpeedFPS = 16.0;
     /* Drivetrain Motor IDs */
     public static final int leftMotorA = 1; // TalonSRX
     public static final int leftMotorB = 2; // TalonSRX
