@@ -45,7 +45,7 @@ public class Drive extends Command {
             case CheesyDrive:
                 
                 if (throttle != 0) {
-                    double omega = degreeToRadian(turn*Constants.kCurvatureScale);
+                    double omega = Math.toRadians(turn*Constants.kCurvatureScale);
                     double nu = throttle*Constants.kTopSpeedFPS;
 
                     left = nu - (Constants.wheelbase / 2.0) * omega;
@@ -76,7 +76,4 @@ public class Drive extends Command {
         OpenLoop, CheesyDrive
     }
 
-    private double degreeToRadian(double degrees){
-        return degrees*Math.PI/180.0;
-    }
 }
