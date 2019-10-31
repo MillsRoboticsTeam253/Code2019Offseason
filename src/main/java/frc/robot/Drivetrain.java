@@ -81,18 +81,13 @@ public class Drivetrain extends Subsystem {
     /**
      * Sets the drivetrain to run at a set speed (open loop percent voltage or closed loop velocity)
      * 
-     * @param isOpenLoop Whether to use Percent Max Voltage or Velocity modes
-     * @param left Value for left side of the drivetrain
-     * @param right Value for right side of the drivetrain
+     * @param mode Mode to use (same as TalonSRX set() modes)
+     * @param left Value for left side of the drivetrain (in feet/sec for velocity mode)
+     * @param right Value for right side of the drivetrain (in feet/sec for velocity mode)
      */
-    public static void set(boolean isOpenLoop, double left, double right){
-        if(isOpenLoop){
-            leftMotorA.set(ControlMode.PercentOutput, left);
-            rightMotorA.set(ControlMode.PercentOutput, right);
-        } else {
-            leftMotorA.set(ControlMode.Velocity, left);
-            rightMotorA.set(ControlMode.Velocity, right);
-        }
+    public static void set(ControlMode mode, double left, double right){
+        leftMotorA.set(mode, left);
+        rightMotorA.set(mode, right);
     }
 
     public void resetEncoders(){
@@ -117,5 +112,9 @@ public class Drivetrain extends Subsystem {
     // Returns the current measurement of the right drivetrain encoder in feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels
     public static double getRightFeet(){
         return ((rightMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
+    }
+
+    public static double FPStoTicksPerDecisecond (double val) {
+        return (((val/10.0)*12)/(4*Math.PI))*1024;
     }
 }

@@ -19,6 +19,7 @@ public class Constants {
     public static final double kCurvatureScale = 30; // Turnrate in degrees/sec
     public static final double kV = 1.0; // Minimum voltage required to overcome static friction
     public static final double kTopSpeedFPS = 16.0;
+
     /* Drivetrain Motor IDs */
     public static final int leftMotorA = 1; // TalonSRX
     public static final int leftMotorB = 2; // TalonSRX
@@ -27,5 +28,14 @@ public class Constants {
     public static final int rightMotorA = 3; // TalonSRX
     public static final int rightMotorB = 4; // TalonSRX
     public static final int rightMotorC = 2; // VictorSPX
+
+    /* Vision PD Controller Gains */
+    public static final int kPAim = 0;
+    public static final int kDAim = 0;
+
+    public static final int kPDist = 0;
+    public static final int kDDist = 0;
+
+    public static final int acceptableError = 1;
 
 }

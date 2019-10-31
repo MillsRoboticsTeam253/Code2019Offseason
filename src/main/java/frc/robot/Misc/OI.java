@@ -2,6 +2,8 @@ package frc.robot.Misc;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.SPI.Port;
@@ -32,6 +34,7 @@ public class OI {
     private JoystickButton triggerRight;
 
     private static AHRS navX;
+    private static NetworkTable limelight;
 
     private static OI instance = null;
 
@@ -42,6 +45,7 @@ public class OI {
     }
 
     public OI() {
+        limelight = NetworkTableInstance.getDefault().getTable("limelight");
         navX = new AHRS(Port.kMXP, (byte)200); // Overriding navX default update rate with a 200hz update rate
         xboxcontroller = new XboxController(0);
 
@@ -110,6 +114,64 @@ public class OI {
             return input;
         } else {
             return input * (1.0 - deadband) + Math.signum(input) * deadband;
+        }
+    }
+
+     /*
+     * Methods for setting limelight values
+     */
+
+    public void setLEDMode(LEDMode ledMode) {
+        limelight.getEntry("ledMode").setNumber(ledMode.val);
+    }
+
+    public void setCamMode() {
+        limelight.getEntry("camMode").setNumber(0);
+    }
+
+    public void setStreamMode(StreamMode stream) {
+        limelight.getEntry("stream").setNumber(stream.val);
+    }
+
+    public void setPipeline(VisionPipeline pipeline) {
+        limelight.getEntry("pipeline").setNumber(pipeline.val);
+    }
+
+    public static double getXOffset() {
+        return -limelight.getEntry("tx").getDouble(0);
+    }
+
+    public static double getYOffset() {
+        return -limelight.getEntry("ty").getDouble(0.0);
+    }
+
+    public static enum LEDMode {
+        PIPELINE(0), OFF(1), BLINK(2), ON(3);
+
+        public int val;
+
+        private LEDMode(int val) {
+            this.val = val;
+        }
+    }
+
+    public static enum StreamMode {
+        SIDE_BY_SIDE(0), PIP_MAIN(1), PIP_SECONDARY(2);
+
+        public int val;
+        
+        private StreamMode(int val){
+            this.val = val;
+        }
+    }
+
+    public static enum VisionPipeline {
+        VISION(0), DRIVER(1);
+
+        public int val;
+
+        private VisionPipeline(int val){
+            this.val = val;
         }
     }
 }

@@ -3,6 +3,8 @@ package frc.robot.Auto;
 import java.io.File;
 import java.io.IOException;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Drivetrain;
 import frc.robot.Robot;
@@ -118,7 +120,7 @@ public class TrajectoryTracker extends Command {
         right = FPStoTicksPerDecisecond(right);
 
         // Setting drivetrain to speeds in closed loop
-        Drivetrain.set(false, left, right);
+        Drivetrain.set(ControlMode.Velocity, left, right);
 
     }
 
@@ -130,7 +132,7 @@ public class TrajectoryTracker extends Command {
 
     // When isFinished() returns true, the command will stop running and the drivetrain will be set to stop
     protected void end() {
-        Drivetrain.set(false, 0.0, 0.0);
+        Drivetrain.set(ControlMode.Velocity, 0.0, 0.0);
     }
 
     /**
