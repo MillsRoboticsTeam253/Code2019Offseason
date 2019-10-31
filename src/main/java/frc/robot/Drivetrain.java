@@ -59,10 +59,10 @@ public class Drivetrain extends Subsystem {
             if (motor instanceof TalonSRX) {
                 TalonSRX talon = (TalonSRX) motor;
 
-                talon.configPeakCurrentLimit(60);
-                talon.configPeakCurrentDuration(500);
+                talon.configPeakCurrentLimit(45);
+                talon.configPeakCurrentDuration(125);
                 talon.configContinuousCurrentLimit(38);
-                talon.enableCurrentLimit(false);
+                talon.enableCurrentLimit(true);
             }
 
             motor.configVoltageCompSaturation(12, 10);
