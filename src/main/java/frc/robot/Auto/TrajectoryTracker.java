@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Drivetrain;
@@ -115,12 +116,15 @@ public class TrajectoryTracker extends Command {
         double left = v - (Constants.wheelbase / 2.0) * w;
         double right = v + (Constants.wheelbase / 2.0) * w;
 
+        double leftFf = (Constants.kS + Constants.kV * left + Constants.kA * left)/12;
+        double rightFf = (Constants.kS + Constants.kV * right + Constants.kA * right)/12;
+
         // Converting velocities to Talon native velocity units
         left = FPStoTicksPerDecisecond(left);
         right = FPStoTicksPerDecisecond(right);
 
         // Setting drivetrain to speeds in closed loop
-        Drivetrain.set(ControlMode.Velocity, left, right);
+        Drivetrain.setClosedloop(left, leftFf, right, rightFf);
 
     }
 
@@ -132,7 +136,7 @@ public class TrajectoryTracker extends Command {
 
     // When isFinished() returns true, the command will stop running and the drivetrain will be set to stop
     protected void end() {
-        Drivetrain.set(ControlMode.Velocity, 0.0, 0.0);
+        Drivetrain.setOpenloop(0.0, 0.0);
     }
 
     /**

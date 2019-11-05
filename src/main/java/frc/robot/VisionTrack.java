@@ -89,7 +89,7 @@ public class VisionTrack extends Command {
         SmartDashboard.putNumber("Vision left", left);
         SmartDashboard.putNumber("Vision right", right);
         
-        Drivetrain.set(ControlMode.Velocity, left, right);
+        Drivetrain.setOpenloop(left, right);
     }
 
     protected boolean isFinished() {
@@ -102,7 +102,7 @@ public class VisionTrack extends Command {
     }
 
     protected void end() {
-        Drivetrain.set(ControlMode.PercentOutput, 0, 0);
+        Drivetrain.setOpenloop(0, 0);
         Robot.oi.setPipeline(VisionPipeline.DRIVER);
     }
 

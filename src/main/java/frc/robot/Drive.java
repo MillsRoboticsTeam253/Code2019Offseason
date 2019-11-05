@@ -1,7 +1,5 @@
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Misc.Constants;
@@ -44,7 +42,10 @@ public class Drive extends Command {
                 SmartDashboard.putNumber("left", left);
                 SmartDashboard.putNumber("right", right);
 
-                Drivetrain.set(ControlMode.PercentOutput, left, right);
+                Drivetrain.setOpenloop(left, right);
+
+                System.out.println("OPEN");
+                break;
 
             case CheesyDrive:
                 // Cheesydrive as long as throttle is greater than zero (deadbanded)
@@ -61,7 +62,17 @@ public class Drive extends Command {
                     right = -turn * Constants.kTurnInPlaceSens;
                 }
 
-                Drivetrain.set(ControlMode.Velocity, left, right);
+                double leftFf = (Constants.kS + Constants.kV * left + Constants.kA * left)/12;
+                double rightFf = (Constants.kS + Constants.kV * right + Constants.kA * right)/12;
+
+                // Converting velocities to Talon native velocity units
+                left = FPStoTicksPerDecisecond(left);
+                right = FPStoTicksPerDecisecond(right);
+
+                Drivetrain.setClosedloop(left, leftFf, right, rightFf);
+
+                System.out.println("CLOSED");
+                break;
         }
         
     }
@@ -73,11 +84,20 @@ public class Drive extends Command {
 
     // When this command ends, it stops the drivetrain to guarantee safety
     protected void end() {
-        Drivetrain.set(ControlMode.PercentOutput, 0, 0);
+        Drivetrain.setOpenloop(0, 0);
     }
 
     protected static enum State {
         OpenLoop, CheesyDrive
+    }
+
+    /**
+     * Converts feet/second to ticks/100ms
+     * @param fps feet/second input
+     * @return equivalent in ticks/100ms 
+     */
+    private double FPStoTicksPerDecisecond(double fps){
+        return fps * 12 / (4 * Math.PI) * 1024 / 10;
     }
 
 }

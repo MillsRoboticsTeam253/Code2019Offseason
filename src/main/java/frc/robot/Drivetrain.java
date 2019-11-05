@@ -2,7 +2,10 @@ package frc.robot;
 
 import java.util.Arrays;
 
+import javax.swing.text.StyleContext.SmallAttributeSet;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.IMotorController;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
@@ -10,6 +13,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Auto.EncoderOdom;
 import frc.robot.Misc.Constants;
 
@@ -76,6 +80,9 @@ public class Drivetrain extends Subsystem {
         });
         leftMotorA.setSensorPhase(false);
         rightMotorA.setSensorPhase(false);
+
+        leftMotorA.config_kP(0, Constants.kPVelocity);
+        rightMotorA.config_kP(0, Constants.kPVelocity);
     }
 
     /**
@@ -84,10 +91,24 @@ public class Drivetrain extends Subsystem {
      * @param mode Mode to use (same as TalonSRX set() modes)
      * @param left Value for left side of the drivetrain (in feet/sec for velocity mode)
      * @param right Value for right side of the drivetrain (in feet/sec for velocity mode)
+     * @param type Secondary demand type
+     * @param auxFf Secondary demand value (should be [-1, 1])
      */
-    public static void set(ControlMode mode, double left, double right){
-        leftMotorA.set(mode, left);
-        rightMotorA.set(mode, right);
+    public static void setOpenloop(double left, double right){
+        leftMotorA.set(ControlMode.PercentOutput, left);
+        rightMotorA.set(ControlMode.PercentOutput, right);
+
+    }
+
+    public static void setClosedloop(double left, double leftFf, double right, double rightFf){
+        leftMotorA.set(ControlMode.PercentOutput, left, DemandType.ArbitraryFeedForward, leftFf);
+        rightMotorA.set(ControlMode.PercentOutput, right, DemandType.ArbitraryFeedForward, rightFf);
+
+        SmartDashboard.putNumber("Left Control Effort", left);
+        SmartDashboard.putNumber("Right Control Effort", right);
+
+        SmartDashboard.putNumber("Left Error", leftMotorA.getClosedLoopError());
+        SmartDashboard.putNumber("Right Error", rightMotorA.getClosedLoopError());
     }
 
     public void resetEncoders(){
