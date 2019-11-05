@@ -26,6 +26,9 @@ public class TrajectoryTracker extends Command {
     private double beta;
     private double zeta;
 
+    private double last_left = 0;
+    private double last_right = 0;
+
     private int index;
 
     /**
@@ -116,8 +119,11 @@ public class TrajectoryTracker extends Command {
         double left = v - (Constants.wheelbase / 2.0) * w;
         double right = v + (Constants.wheelbase / 2.0) * w;
 
-        double leftFf = (Constants.kS + Constants.kV * left + Constants.kA * left)/12;
-        double rightFf = (Constants.kS + Constants.kV * right + Constants.kA * right)/12;
+        double leftFf = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left-last_left)/dt)/12;
+        double rightFf = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right-last_right)/dt)/12;
+
+        last_left = left;
+        last_right = right;
 
         // Converting velocities to Talon native velocity units
         left = FPStoTicksPerDecisecond(left);

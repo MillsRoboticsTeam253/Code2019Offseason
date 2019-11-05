@@ -101,11 +101,11 @@ public class Drivetrain extends Subsystem {
     }
 
     public static void setClosedloop(double left, double leftFf, double right, double rightFf){
-        leftMotorA.set(ControlMode.PercentOutput, left, DemandType.ArbitraryFeedForward, leftFf);
-        rightMotorA.set(ControlMode.PercentOutput, right, DemandType.ArbitraryFeedForward, rightFf);
+        leftMotorA.set(ControlMode.Velocity, left, DemandType.ArbitraryFeedForward, leftFf);
+        rightMotorA.set(ControlMode.Velocity, right, DemandType.ArbitraryFeedForward, rightFf);
 
-        SmartDashboard.putNumber("Left Control Effort", left);
-        SmartDashboard.putNumber("Right Control Effort", right);
+        SmartDashboard.putNumber("Left Control Effort", leftMotorA.getMotorOutputVoltage());
+        SmartDashboard.putNumber("Right Control Effort", rightMotorA.getMotorOutputVoltage());
 
         SmartDashboard.putNumber("Left Error", leftMotorA.getClosedLoopError());
         SmartDashboard.putNumber("Right Error", rightMotorA.getClosedLoopError());

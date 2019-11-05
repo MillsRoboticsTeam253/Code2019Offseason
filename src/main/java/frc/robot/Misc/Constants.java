@@ -5,7 +5,7 @@ public class Constants {
     public static final int kPCM_ID = 1; // PCM ID
 
     /* Auto Settings */
-    public static final double wheelbase = 1.583333333; // Wheelbase in feet
+    public static final double wheelbase = 1.7083333; // Wheelbase in feet
 
     /* Differential Drive Settings */
     public static final double kJoystickDeadband = 0.03; // Number between 0 and 1 representing how much of joystick is "dead" zone
@@ -17,7 +17,7 @@ public class Constants {
 
     /* Cheesydrive Settings */
     public static final double kCurvatureScale = 30; // Turnrate in degrees/sec
-    public static final double kS = 1.0; // Minimum voltage required to overcome static friction
+    public static final double kS = 1.33; // Minimum voltage required to overcome static friction
     public static final double kV = 0.601;
     public static final double kA = 0.158;
     public static final double kTopSpeedFPS = 16.0;

@@ -1,7 +1,5 @@
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
@@ -23,6 +21,9 @@ public class VisionTrack extends Command {
 
     private PDController aim;
     private PDController dist;
+
+    private double last_left = 0;
+    private double last_right = 0;
 
     public VisionTrack(){
         requires(Robot.drivetrain);
@@ -86,10 +87,25 @@ public class VisionTrack extends Command {
         left = dist_adjust - (Constants.wheelbase / 2.0) * aim_adjust;
         right = dist_adjust + (Constants.wheelbase / 2.0) * aim_adjust;
 
+        /*
+            V_app = kS + kV * velocity + kA * acceleration;
+            kS is multiplied by signum(velocity), which returns 0 when desired velocity is 0 
+        */
+        double leftFf = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
+        double rightFf = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
+
+        last_left = left;
+        last_right = right;
+
+        // Converting velocities to Talon native velocity units
+        left = FPStoTicksPerDecisecond(left);
+        right = FPStoTicksPerDecisecond(right);
+
+        Drivetrain.setClosedloop(left, leftFf, right, rightFf);
+
         SmartDashboard.putNumber("Vision left", left);
         SmartDashboard.putNumber("Vision right", right);
         
-        Drivetrain.setOpenloop(left, right);
     }
 
     protected boolean isFinished() {
@@ -108,6 +124,15 @@ public class VisionTrack extends Command {
 
     private double clamp(double val, double lower, double higher) {
         return Math.max(lower, Math.min(val, higher));
+    }
+
+    /**
+     * Converts feet/second to ticks/100ms
+     * @param fps feet/second input
+     * @return equivalent in ticks/100ms 
+     */
+    private double FPStoTicksPerDecisecond(double fps){
+        return fps * 12 / (4 * Math.PI) * 1024 / 10;
     }
 
 }

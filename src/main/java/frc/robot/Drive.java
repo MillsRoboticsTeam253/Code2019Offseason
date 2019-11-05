@@ -9,6 +9,7 @@ public class Drive extends Command {
 
     private double left, right;
     private State state;
+    private double last_left = 0, last_right = 0;
 
     public Drive(State state) {
         this.state = state;
@@ -43,8 +44,6 @@ public class Drive extends Command {
                 SmartDashboard.putNumber("right", right);
 
                 Drivetrain.setOpenloop(left, right);
-
-                System.out.println("OPEN");
                 break;
 
             case CheesyDrive:
@@ -61,17 +60,22 @@ public class Drive extends Command {
                     left = turn * Constants.kTurnInPlaceSens;
                     right = -turn * Constants.kTurnInPlaceSens;
                 }
+                
+                /*
+                    V_app = kS + kV * velocity + kA * acceleration;
+                    kS is multiplied by signum(velocity), which returns 0 when desired velocity is 0 
+                */
+                double leftFf = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
+                double rightFf = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
 
-                double leftFf = (Constants.kS + Constants.kV * left + Constants.kA * left)/12;
-                double rightFf = (Constants.kS + Constants.kV * right + Constants.kA * right)/12;
+                last_left = left;
+                last_right = right;
 
                 // Converting velocities to Talon native velocity units
                 left = FPStoTicksPerDecisecond(left);
                 right = FPStoTicksPerDecisecond(right);
 
                 Drivetrain.setClosedloop(left, leftFf, right, rightFf);
-
-                System.out.println("CLOSED");
                 break;
         }
         
