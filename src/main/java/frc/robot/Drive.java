@@ -49,33 +49,39 @@ public class Drive extends Command {
             case CheesyDrive:
                 // Cheesydrive as long as throttle is greater than zero (deadbanded)
                 if (throttle != 0) {
-                    double omega = Math.toRadians(turn*Constants.kCurvatureScale);
                     double nu = throttle*Constants.kTopSpeedFPS;
+                    double omega = nu*Math.toRadians(turn*Constants.kCurvatureScale);
 
-                    left = nu - (Constants.wheelbase / 2.0) * omega;
-                    right = nu + (Constants.wheelbase / 2.0) * omega;
+                    SmartDashboard.putNumber("omega", omega);
+
+                    left = nu + (Constants.wheelbase / 2.0) * omega;
+                    right = nu - (Constants.wheelbase / 2.0) * omega;
+
+                    /*
+                    V_app = kS + kV * velocity + kA * acceleration;
+                    kS is multiplied by signum(velocity), which returns 0 when desired velocity is 0 
+                    */
+                    double leftFf = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
+                    double rightFf = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
+
+                    last_left = left;
+                    last_right = right;
+
+                    // Converting velocities to Talon native velocity units
+                    left = FPStoTicksPerDecisecond(left);
+                    right = FPStoTicksPerDecisecond(right);
+
+                    Drivetrain.setClosedloop(left, leftFf, right, rightFf);
 
                 // Turns in place when there is no throttle input
                 } else {
                     left = turn * Constants.kTurnInPlaceSens;
                     right = -turn * Constants.kTurnInPlaceSens;
+
+                    Drivetrain.setOpenloop(left, right);
                 }
                 
-                /*
-                    V_app = kS + kV * velocity + kA * acceleration;
-                    kS is multiplied by signum(velocity), which returns 0 when desired velocity is 0 
-                */
-                double leftFf = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
-                double rightFf = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
-
-                last_left = left;
-                last_right = right;
-
-                // Converting velocities to Talon native velocity units
-                left = FPStoTicksPerDecisecond(left);
-                right = FPStoTicksPerDecisecond(right);
-
-                Drivetrain.setClosedloop(left, leftFf, right, rightFf);
+                
                 break;
         }
         

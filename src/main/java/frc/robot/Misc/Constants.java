@@ -16,13 +16,13 @@ public class Constants {
     public static final double kTurnInPlaceSens = 1; // Maximum turn-in-place rate (in percent of max) to allow robot to turn to, b/t 0 and 1
 
     /* Cheesydrive Settings */
-    public static final double kCurvatureScale = 30; // Turnrate in degrees/sec
+    public static final double kCurvatureScale = 180; // Turnrate in degrees/sec
     public static final double kS = 1.33; // Minimum voltage required to overcome static friction
     public static final double kV = 0.601;
     public static final double kA = 0.158;
     public static final double kTopSpeedFPS = 16.0;
 
-    public static final double kPVelocity = 0;
+    public static final double kPVelocity = 11.4;
 
     /* Drivetrain Motor IDs */
     public static final int leftMotorA = 1; // TalonSRX

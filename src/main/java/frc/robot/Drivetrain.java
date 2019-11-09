@@ -8,6 +8,7 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.IMotorController;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
@@ -43,7 +44,7 @@ public class Drivetrain extends Subsystem {
 
     // Will run the {@link Drive} Command when the subsystem is not otherwise being used
     public void initDefaultCommand() {
-        setDefaultCommand(new Drive(Drive.State.CheesyDrive));
+        setDefaultCommand(new Drive(Drive.State.OpenLoop));
     }
 
     private Drivetrain(){
@@ -71,6 +72,8 @@ public class Drivetrain extends Subsystem {
 
             motor.configVoltageCompSaturation(12, 10);
             motor.enableVoltageCompensation(true);
+
+            motor.setNeutralMode(NeutralMode.Coast);
         });
 
         /* Encoder settings */
