@@ -1,7 +1,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Drivetrain.WheelState;
 import frc.robot.Misc.Constants;
 import frc.robot.Misc.OI;
 
@@ -21,7 +23,7 @@ public class Drive extends Command {
     protected void execute() {
 
         // Retrieving the deadbanded throttle and turn values (the controller joystick values)
-        double throttle = OI.getThrottleValue() * Constants.kDriveSens;
+        double throttle = OI.getThrottleValue();
         double turn = OI.getTurnValue();
 
         SmartDashboard.putNumber("throttle", throttle);
@@ -47,42 +49,28 @@ public class Drive extends Command {
                 break;
 
             case CheesyDrive:
-                // Cheesydrive as long as throttle is greater than zero (deadbanded)
-                if (throttle != 0) {
-                    double nu = throttle*Constants.kTopSpeedFPS;
-                    double omega = nu*Math.toRadians(turn*Constants.kCurvatureScale);
-
-                    SmartDashboard.putNumber("omega", omega);
-
-                    left = nu + (Constants.wheelbase / 2.0) * omega;
-                    right = nu - (Constants.wheelbase / 2.0) * omega;
-
-                    /*
-                    V_app = kS + kV * velocity + kA * acceleration;
-                    kS is multiplied by signum(velocity), which returns 0 when desired velocity is 0 
-                    */
-                    double leftFf = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
-                    double rightFf = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
-
-                    last_left = left;
-                    last_right = right;
-
-                    // Converting velocities to Talon native velocity units
-                    left = FPStoTicksPerDecisecond(left);
-                    right = FPStoTicksPerDecisecond(right);
-
-                    Drivetrain.setClosedloop(left, leftFf, right, rightFf);
-
-                // Turns in place when there is no throttle input
+                WheelState wheelSpeeds;
+                if(throttle != 0) {
+                    wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, false);
                 } else {
-                    left = turn * Constants.kTurnInPlaceSens;
-                    right = -turn * Constants.kTurnInPlaceSens;
-
-                    Drivetrain.setOpenloop(left, right);
+                    wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, true);
                 }
-                
-                
+
+                left = wheelSpeeds.left * Constants.kTopSpeedFPS;
+                right = wheelSpeeds.right * Constants.kTopSpeedFPS;
+
+                double leftff = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
+                double rightff = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
+
+                left = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(left);
+                right = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(right);
+
+                last_left = left;
+                last_right = right;
+
+                Drivetrain.setClosedloop(left, leftff, right, rightff);
                 break;
+                
         }
         
     }
@@ -101,13 +89,6 @@ public class Drive extends Command {
         OpenLoop, CheesyDrive
     }
 
-    /**
-     * Converts feet/second to ticks/100ms
-     * @param fps feet/second input
-     * @return equivalent in ticks/100ms 
-     */
-    private double FPStoTicksPerDecisecond(double fps){
-        return fps * 12 / (4 * Math.PI) * 1024 / 10;
-    }
+    
 
 }

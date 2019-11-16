@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.Drivetrain.WheelState;
 import frc.robot.Misc.Constants;
 import frc.robot.Misc.OI;
 import frc.robot.Misc.PDController;
@@ -67,25 +68,15 @@ public class VisionTrack extends Command {
         double aim_adjust = aim.calculate(aim_error); // Output of PD loop on heading
         double dist_adjust = dist.calculate(dist_error); // Output of PD loop on distance
 
-        /*
-        aim_adjust = clamp(aim_adjust, -1, 1);
-        dist_adjust = clamp(dist_adjust, -1, 1);
+        WheelState wheelspeeds;
+        if (Math.abs(dist_adjust) > Constants.acceptableDistAdjustError) { // Quickturn once distance error is minimized
+            wheelspeeds = Drivetrain.DifferentialDrive.curvatureDrive(dist_adjust, aim_adjust, false);
+        } else {
+            wheelspeeds = Drivetrain.DifferentialDrive.curvatureDrive(dist_adjust, aim_adjust, true);
+        }
 
-        left = dist_adjust + Math.abs(dist_adjust) * aim_adjust; 
-        right = dist_adjust - Math.abs(dist_adjust) * aim_adjust;
-
-        // Normalize speeds
-        double maxMagnitude = Math.max(Math.abs(left), Math.abs(right));
-        if(maxMagnitude > 1) {
-            left = left / maxMagnitude;
-            right = right / maxMagnitude;
-        }*/
-
-        aim_adjust = Math.toRadians(aim_adjust*Constants.kCurvatureScale); // Converting to radian units, with arbitrary rescale factor
-        dist_adjust = dist_adjust*Constants.kTopSpeedFPS; // Converting to velocity units
-
-        left = dist_adjust - (Constants.wheelbase / 2.0) * aim_adjust;
-        right = dist_adjust + (Constants.wheelbase / 2.0) * aim_adjust;
+        left = wheelspeeds.left * Constants.kTopSpeedFPS;
+        right = wheelspeeds.left * Constants.kTopSpeedFPS;
 
         /*
             V_app = kS + kV * velocity + kA * acceleration;
@@ -98,13 +89,10 @@ public class VisionTrack extends Command {
         last_right = right;
 
         // Converting velocities to Talon native velocity units
-        left = FPStoTicksPerDecisecond(left);
-        right = FPStoTicksPerDecisecond(right);
+        left = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(left);
+        right = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(right);
 
         Drivetrain.setClosedloop(left, leftFf, right, rightFf);
-
-        SmartDashboard.putNumber("Vision left", left);
-        SmartDashboard.putNumber("Vision right", right);
         
     }
 
@@ -120,19 +108,6 @@ public class VisionTrack extends Command {
     protected void end() {
         Drivetrain.setOpenloop(0, 0);
         Robot.oi.setPipeline(VisionPipeline.DRIVER);
-    }
-
-    private double clamp(double val, double lower, double higher) {
-        return Math.max(lower, Math.min(val, higher));
-    }
-
-    /**
-     * Converts feet/second to ticks/100ms
-     * @param fps feet/second input
-     * @return equivalent in ticks/100ms 
-     */
-    private double FPStoTicksPerDecisecond(double fps){
-        return fps * 12 / (4 * Math.PI) * 1024 / 10;
     }
 
 }

@@ -114,6 +114,81 @@ public class Drivetrain extends Subsystem {
         SmartDashboard.putNumber("Right Error", rightMotorA.getClosedLoopError());
     }
 
+
+    static class WheelState {
+        public double left, right;
+        public WheelState(double left, double right){
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    static class DifferentialDrive {
+        private static double quickStopAccumulator = 0.0;
+        public static WheelState curvatureDrive(double linearPercent, double curvaturePercent, boolean isQuickTurn){
+            final double angularPower;
+            final boolean overPower;
+
+            if (isQuickTurn){
+                if(Math.abs(linearPercent) < Constants.kQuickStopThreshold) {
+                    quickStopAccumulator = (1-Constants.kQuickStopAlpha) * quickStopAccumulator + 
+                        Constants.kQuickStopAlpha * clamp(curvaturePercent, -1.0, 1.0) * 2.0;
+                }
+                overPower = true;
+                angularPower = curvaturePercent;
+                
+            } else {
+                overPower = false;
+                angularPower = Math.abs(linearPercent) * curvaturePercent - quickStopAccumulator;
+
+                if(quickStopAccumulator > 1) {
+                    quickStopAccumulator -= 1.0;
+                } else if(quickStopAccumulator < 1) {
+                    quickStopAccumulator += 1.0;
+                } else {
+                    quickStopAccumulator = 0.0;
+                }
+            }
+
+            double left = linearPercent + angularPower;
+            double right = linearPercent - angularPower;
+
+            // If rotation is overpowered, reduce both outputs to within acceptable range
+            if (overPower) {
+                if(left > 1) {
+                    right -= left - 1;
+                    left = 1;
+                } else if (right > 1){
+                    left -= right - 1;
+                    right = 1;
+                } else if (left < -1){
+                    right -= left + 1;
+                    left = -1;
+                } else if (right < -1){
+                    left -= right + 1;
+                    right = -1;
+                }
+            }
+
+            // Normalize the wheel speeds
+            double maxMagnitude = Math.max(Math.abs(left), Math.abs(right));
+            if(maxMagnitude > 1) {
+                left /= maxMagnitude;
+                right /= maxMagnitude;
+            }
+
+            return new WheelState(left, right);
+        }
+
+        private static double clamp(double val, double low, double high){
+            return Math.max(low, Math.min(high, val));
+        }
+
+        public static double FPStoTicksPerDecisecond (double val) {
+            return (((val/10.0)*12)/(4*Math.PI))*1024;
+        }
+    }
+
     public void resetEncoders(){
         Arrays.asList(leftMotorA, rightMotorA).forEach(motor -> motor.setSelectedSensorPosition(0));
     }
@@ -136,9 +211,5 @@ public class Drivetrain extends Subsystem {
     // Returns the current measurement of the right drivetrain encoder in feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels
     public static double getRightFeet(){
         return ((rightMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
-    }
-
-    public static double FPStoTicksPerDecisecond (double val) {
-        return (((val/10.0)*12)/(4*Math.PI))*1024;
     }
 }
