@@ -62,8 +62,9 @@ public class VisionTrack extends Command {
         double aim_error = OI.getXOffset(); 
         double dist_error = OI.getYOffset();
 
-        if(Math.abs(aim_error) < Constants.acceptableError) aim_error = 0;
-        if(Math.abs(dist_error) < Constants.acceptableError) dist_error = 0;
+        // Number of pixels error to tolerate (minimizes jittering when the error is small)
+        if(Math.abs(aim_error) < Constants.acceptablePixelError) aim_error = 0;
+        if(Math.abs(dist_error) < Constants.acceptablePixelError) dist_error = 0;
 
         double aim_adjust = aim.calculate(aim_error); // Output of PD loop on heading
         double dist_adjust = dist.calculate(dist_error); // Output of PD loop on distance
@@ -75,8 +76,8 @@ public class VisionTrack extends Command {
             wheelspeeds = Drivetrain.DifferentialDrive.curvatureDrive(dist_adjust, aim_adjust, true);
         }
 
-        left = wheelspeeds.left * Constants.kTopSpeedFPS;
-        right = wheelspeeds.left * Constants.kTopSpeedFPS;
+        left = wheelspeeds.left * Constants.kTopSpeedMPS;
+        right = wheelspeeds.left * Constants.kTopSpeedMPS;
 
         /*
             V_app = kS + kV * velocity + kA * acceleration;
@@ -89,8 +90,8 @@ public class VisionTrack extends Command {
         last_right = right;
 
         // Converting velocities to Talon native velocity units
-        left = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(left);
-        right = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(right);
+        left = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(left);
+        right = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(right);
 
         Drivetrain.setClosedloop(left, leftFf, right, rightFf);
         

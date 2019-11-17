@@ -185,7 +185,19 @@ public class Drivetrain extends Subsystem {
         }
 
         public static double FPStoTicksPerDecisecond (double val) {
-            return (((val/10.0)*12)/(4*Math.PI))*1024;
+            return val * 0.00485104266 * Constants.ticksPerRotation / Constants.wheelRadius;
+        }
+
+        public static double MPStoTicksPerDecisecond (double val) {
+            return val * 0.0159154943 * Constants.ticksPerRotation / Constants.wheelRadius;
+        }
+
+        public static double TicksPerDecisecondtoFPS (double val) {
+            return val * 206.141250467 * Constants.wheelRadius / Constants.ticksPerRotation;
+        }
+
+        public static double TicksPerDecisecondtoMPS (double val) {
+            return val * 62.8318530718 * Constants.wheelRadius / Constants.ticksPerRotation;
         }
     }
 

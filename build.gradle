@@ -54,6 +54,9 @@ dependencies {
     nativeDesktopZip wpi.deps.vendor.jni(wpi.platforms.desktop)
     testCompile 'junit:junit:4.12'
     compile "org.ejml:ejml-simple:0.38"
+    compile "com.fasterxml.jackson.core:jackson-core:2.10.1"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.10.1"
+    compile "com.fasterxml.jackson.core:jackson-annotations:2.10.1"
 }
 
 // Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')

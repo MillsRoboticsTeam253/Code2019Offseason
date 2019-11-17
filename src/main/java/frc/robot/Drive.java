@@ -56,14 +56,18 @@ public class Drive extends Command {
                     wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, true);
                 }
 
-                left = wheelSpeeds.left * Constants.kTopSpeedFPS;
-                right = wheelSpeeds.right * Constants.kTopSpeedFPS;
+                left = wheelSpeeds.left * Constants.kTopSpeedMPS;
+                right = wheelSpeeds.right * Constants.kTopSpeedMPS;
 
+                /*
+                    V_app = kS + kV * velocity + kA * acceleration;
+                    kS is multiplied by signum(velocity), which returns 0 when desired velocity is 0 
+                */
                 double leftff = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
                 double rightff = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
 
-                left = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(left);
-                right = Drivetrain.DifferentialDrive.FPStoTicksPerDecisecond(right);
+                left = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(left);
+                right = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(right);
 
                 last_left = left;
                 last_right = right;
