@@ -38,7 +38,7 @@ public class DrivetrainOdometry extends DifferentialDriveOdometry implements Run
         Rotation2d gyroAngle = new Rotation2d(Units.degreesToRadians(navX.getAngle()));
 
         super.updateWithTime(Timer.getFPGATimestamp(), gyroAngle, wheelSpeeds);
-        Robot.falcondashboard.putOdom(super.getPoseMeters(), gyroAngle);
+        Robot.falcondashboard.putOdom(super.getPoseMeters());
     }
 
     private static double TicksPerDecisecondtoMPS (double val) {

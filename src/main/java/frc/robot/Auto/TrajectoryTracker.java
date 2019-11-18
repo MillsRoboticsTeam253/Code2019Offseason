@@ -3,7 +3,6 @@ package frc.robot.Auto;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
@@ -39,8 +38,7 @@ public class TrajectoryTracker extends RamseteCommand {
 
         Trajectory.State currentState = trajectory.sample(currentTime-startTime);
         Pose2d currentPose = currentState.poseMeters;
-        Rotation2d currentRotation = currentPose.getRotation();
-        Robot.falcondashboard.putPath(currentPose, currentRotation);
+        Robot.falcondashboard.putPath(currentPose);
     }
 
     

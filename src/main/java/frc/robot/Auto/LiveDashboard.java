@@ -4,7 +4,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 
 // Interfaces with FalconDashboard 
 // https://github.com/5190GreenHopeRobotics/FalconDashboard
@@ -34,16 +33,16 @@ public class LiveDashboard {
         
     }
 
-    public void putOdom(Pose2d pose, Rotation2d gyroAngle){
+    public void putOdom(Pose2d pose){
         this.robotX.setDouble(pose.getTranslation().getX());
         this.robotY.setDouble(pose.getTranslation().getY());
-        this.robotHeading.setDouble(gyroAngle.getRadians());
+        this.robotHeading.setDouble(pose.getRotation().getRadians());
     }
 
-    public void putPath(Pose2d pose, Rotation2d gyroAngle){
+    public void putPath(Pose2d pose){
         this.pathX.setDouble(pose.getTranslation().getX());
         this.pathY.setDouble(pose.getTranslation().getY());
-        this.pathHeading.setDouble(gyroAngle.getRadians());
+        this.pathHeading.setDouble(pose.getRotation().getRadians());
         this.followingPath.setBoolean(true);
     }
 
