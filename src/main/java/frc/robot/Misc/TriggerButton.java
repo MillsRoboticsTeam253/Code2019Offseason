@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
-public class TriggerButton extends JoystickButton{
+public class TriggerButton extends JoystickButton {
 
     private XboxController joystick;
     private Hand hand;

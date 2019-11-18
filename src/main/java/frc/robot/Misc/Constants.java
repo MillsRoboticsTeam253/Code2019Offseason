@@ -32,7 +32,7 @@ public class Constants {
     public static final double kQuickStopAlpha = 0.1;
 
     /* Auto Settings */
-    public static final double wheelbase = 0.5207; // Wheelbase in meters
+    public static final double trackwidth = 0.5207; // Wheelbase in meters
     public static final double ticksPerRotation = 1024;
     public static final double wheelRadius = 0.1016; // Wheel radius in meters
 

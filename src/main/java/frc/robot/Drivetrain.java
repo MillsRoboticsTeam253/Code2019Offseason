@@ -2,8 +2,6 @@ package frc.robot;
 
 import java.util.Arrays;
 
-import javax.swing.text.StyleContext.SmallAttributeSet;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
@@ -13,12 +11,12 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
-import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Auto.EncoderOdom;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Misc.Constants;
 
-public class Drivetrain extends Subsystem {
+public class Drivetrain implements Subsystem { 
 
     // Constructing speed controllers based on ID numbers
     public static TalonSRX leftMotorA = new TalonSRX(Constants.leftMotorA),
@@ -39,8 +37,11 @@ public class Drivetrain extends Subsystem {
         return instance;
     }
 
-    // Odometry
-    public EncoderOdom odometry = new EncoderOdom();
+    // Closed Loop Modes
+    private static SimpleMotorFeedforward motorFeedForward = new SimpleMotorFeedforward(Constants.kS, Constants.kV, Constants.kA);
+
+    private static double last_left;
+    private static double last_right;
 
     // Will run the {@link Drive} Command when the subsystem is not otherwise being used
     public void initDefaultCommand() {
@@ -103,7 +104,13 @@ public class Drivetrain extends Subsystem {
 
     }
 
-    public static void setClosedloop(double left, double leftFf, double right, double rightFf){
+    public static void setOpenLoop(Double left, Double right){
+        leftMotorA.set(ControlMode.PercentOutput, left.doubleValue());
+        rightMotorA.set(ControlMode.PercentOutput, right.doubleValue());
+    }
+
+    // Inputs are ticks/ds here
+    public static void setClosedLoop(double left, double leftFf, double right, double rightFf) {
         leftMotorA.set(ControlMode.Velocity, left, DemandType.ArbitraryFeedForward, leftFf);
         rightMotorA.set(ControlMode.Velocity, right, DemandType.ArbitraryFeedForward, rightFf);
 
@@ -112,6 +119,20 @@ public class Drivetrain extends Subsystem {
 
         SmartDashboard.putNumber("Left Error", leftMotorA.getClosedLoopError());
         SmartDashboard.putNumber("Right Error", rightMotorA.getClosedLoopError());
+    }
+
+    // Inputs are m/s here
+    public static void setClosedLoop(Double left, Double right) {
+        double accelLeft = (left-last_left)/0.02;
+        double accelRight = (right-last_right)/0.02;
+
+        double leftff = motorFeedForward.calculate(left, accelLeft)/12;
+        double rightff = motorFeedForward.calculate(right, accelRight)/12;
+
+        left = DifferentialDrive.MPStoTicksPerDecisecond(left);
+        right = DifferentialDrive.MPStoTicksPerDecisecond(right);
+
+        setClosedLoop(left, leftff, right, rightff);
     }
 
 
@@ -213,6 +234,14 @@ public class Drivetrain extends Subsystem {
     // Returns the current measurement of the right drivetrain encoder 
     public static double getRightEnc(){
         return rightMotorA.getSelectedSensorPosition();
+    }
+
+    public static double getLeftEncVelocity() {
+        return leftMotorA.getSelectedSensorVelocity();
+    }
+
+    public static double getRightEncVelocity() {
+        return rightMotorA.getSelectedSensorVelocity();
     }
 
     // Returns the current measurement of the left drivetrain encoder in feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels

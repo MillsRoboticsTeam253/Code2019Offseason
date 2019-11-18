@@ -1,13 +1,15 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.command.Command;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import java.util.Set;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Drivetrain.WheelState;
 import frc.robot.Misc.Constants;
 import frc.robot.Misc.OI;
 
-public class Drive extends Command {
+public class Drive implements Command {
 
     private double left, right;
     private State state;
@@ -15,72 +17,77 @@ public class Drive extends Command {
 
     public Drive(State state) {
         this.state = state;
-        requires(Robot.drivetrain);
     }
+
+    Subsystem[] requirements = {Robot.drivetrain};
 
     // Every time execute() is called by the Scheduler, the current XBox controller
     // joystick values are used to calculate motor speeds
-    protected void execute() {
+    public void execute() {
 
-        // Retrieving the deadbanded throttle and turn values (the controller joystick values)
+        // Retrieving the deadbanded throttle and turn values (the controller joystick
+        // values)
         double throttle = OI.getThrottleValue();
         double turn = OI.getTurnValue();
 
         SmartDashboard.putNumber("throttle", throttle);
         SmartDashboard.putNumber("turn", turn);
 
-        switch(state){
-            case OpenLoop:
-                // Differential drive as long as throttle is greater than zero (deadbanded). 
-                if (throttle != 0) {
-                    left = throttle + throttle * turn * Constants.kTurnSens;
-                    right = throttle - throttle * turn * Constants.kTurnSens;
+        switch (state) {
+        case OpenLoop:
+            // Differential drive as long as throttle is greater than zero (deadbanded).
+            if (throttle != 0) {
+                left = throttle + throttle * turn * Constants.kTurnSens;
+                right = throttle - throttle * turn * Constants.kTurnSens;
 
                 // Turns in place when there is no throttle input
-                } else {
-                    left = turn * Constants.kTurnInPlaceSens;
-                    right = -turn * Constants.kTurnInPlaceSens;
-                }
+            } else {
+                left = turn * Constants.kTurnInPlaceSens;
+                right = -turn * Constants.kTurnInPlaceSens;
+            }
 
-                SmartDashboard.putNumber("left", left);
-                SmartDashboard.putNumber("right", right);
+            SmartDashboard.putNumber("left", left);
+            SmartDashboard.putNumber("right", right);
 
-                Drivetrain.setOpenloop(left, right);
-                break;
+            Drivetrain.setOpenloop(left, right);
+            break;
 
-            case CheesyDrive:
-                WheelState wheelSpeeds;
-                if(throttle != 0) {
-                    wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, false);
-                } else {
-                    wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, true);
-                }
+        case CheesyDrive:
+            WheelState wheelSpeeds;
+            if (throttle != 0) {
+                wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, false);
+            } else {
+                wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, true);
+            }
 
-                left = wheelSpeeds.left * Constants.kTopSpeedMPS;
-                right = wheelSpeeds.right * Constants.kTopSpeedMPS;
+            left = wheelSpeeds.left * Constants.kTopSpeedMPS;
+            right = wheelSpeeds.right * Constants.kTopSpeedMPS;
 
-                /*
-                    V_app = kS + kV * velocity + kA * acceleration;
-                    kS is multiplied by signum(velocity), which returns 0 when desired velocity is 0 
-                */
-                double leftff = (Constants.kS * Math.signum(left) + Constants.kV * left + Constants.kA * (left - last_left)/0.02)/12;
-                double rightff = (Constants.kS * Math.signum(right) + Constants.kV * right + Constants.kA * (right - last_right)/0.02)/12;
+            /*
+             * V_app = kS + kV * velocity + kA * acceleration; kS is multiplied by
+             * signum(velocity), which returns 0 when desired velocity is 0
+             */
+            double leftff = (Constants.kS * Math.signum(left) + Constants.kV * left
+                    + Constants.kA * (left - last_left) / 0.02) / 12;
+            double rightff = (Constants.kS * Math.signum(right) + Constants.kV * right
+                    + Constants.kA * (right - last_right) / 0.02) / 12;
 
-                left = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(left);
-                right = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(right);
+            left = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(left);
+            right = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(right);
 
-                last_left = left;
-                last_right = right;
+            last_left = left;
+            last_right = right;
 
-                Drivetrain.setClosedloop(left, leftff, right, rightff);
-                break;
-                
+            Drivetrain.setClosedLoop(left, leftff, right, rightff);
+            break;
+
         }
-        
+
     }
 
-    // Because this Command is default, it never needs to end -- it will simply be interrupted whenever another Command requires the drivetrain
-    protected boolean isFinished() {
+    // Because this Command is default, it never needs to end -- it will simply be
+    // interrupted whenever another Command requires the drivetrain
+    public boolean isFinished() {
         return false;
     }
 
@@ -91,6 +98,11 @@ public class Drive extends Command {
 
     protected static enum State {
         OpenLoop, CheesyDrive
+    }
+
+    @Override
+    public Set<Subsystem> getRequirements() {
+        return Set.of(requirements);
     }
 
     

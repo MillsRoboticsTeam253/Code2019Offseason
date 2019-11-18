@@ -3,6 +3,8 @@ package frc.robot.Auto;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 
 // Interfaces with FalconDashboard 
 // https://github.com/5190GreenHopeRobotics/FalconDashboard
@@ -32,28 +34,22 @@ public class LiveDashboard {
         
     }
 
-    public void putOdom(double robotX, double robotY, double robotHeading) {
-        this.robotX.setDouble(robotX);
-        this.robotY.setDouble(robotY);
-        this.robotHeading.setDouble(robotHeading);
+    public void putOdom(Pose2d pose, Rotation2d gyroAngle){
+        this.robotX.setDouble(pose.getTranslation().getX());
+        this.robotY.setDouble(pose.getTranslation().getY());
+        this.robotHeading.setDouble(gyroAngle.getRadians());
     }
 
-    public void putOdom(Pose2D pose){
-        putOdom(pose.x, pose.y, pose.heading);
-    }
-
-    public void putPath(double pathX, double pathY, double pathHeading){
-        this.pathX.setDouble(pathX);
-        this.pathY.setDouble(pathY);
-        this.pathHeading.setDouble(pathHeading);
+    public void putPath(Pose2d pose, Rotation2d gyroAngle){
+        this.pathX.setDouble(pose.getTranslation().getX());
+        this.pathY.setDouble(pose.getTranslation().getY());
+        this.pathHeading.setDouble(gyroAngle.getRadians());
         this.followingPath.setBoolean(true);
     }
+
 
     public void endPath(){
         this.followingPath.setBoolean(false);
     }
-
-
-
 
 }

@@ -7,9 +7,17 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import frc.robot.Auto.DrivetrainOdometry;
 import frc.robot.Auto.LiveDashboard;
+import frc.robot.Misc.Constants;
 import frc.robot.Misc.OI;
 
 public class Robot extends TimedRobot {
@@ -18,29 +26,41 @@ public class Robot extends TimedRobot {
   public static LiveDashboard falcondashboard;
   public static OI oi;
 
+  public static DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.trackwidth);
+
+  public static DrivetrainOdometry odometry;
+  private static Notifier odometryNotifier;
+
+  TrajectoryConfig config = new TrajectoryConfig(Constants.kTopSpeedMPS-1, 3);
+  
+  Trajectory right_side_auto;
+  Pose2d[] right_side_auto_waypoints = {new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
+                            new Pose2d(3, 0, Rotation2d.fromDegrees(0))};
+                      
+  
+  
+
   @Override
   public void robotInit() {
     drivetrain = Drivetrain.getInstance();
     oi = OI.getInstance();
 
     falcondashboard = new LiveDashboard();
+
+    kinematics = new DifferentialDriveKinematics(Constants.trackwidth);
+    odometryNotifier = new Notifier(odometry);
+    odometryNotifier.startPeriodic(0.02);
     
   }
 
   @Override
   public void autonomousInit() {
-    // Figure out starting position and use that to set the offset
-    drivetrain.odometry.clear();
-    drivetrain.resetEncoders();
-    falcondashboard.setup();
     
   }
 
   @Override
   public void autonomousPeriodic() {
-    // Updating robot pose using odometry
-    drivetrain.odometry.run(); 
-
+    Scheduler.getInstance().run();
   }
 
   @Override
