@@ -43,11 +43,6 @@ public class Drivetrain implements Subsystem {
     private static double last_left;
     private static double last_right;
 
-    // Will run the {@link Drive} Command when the subsystem is not otherwise being used
-    public void initDefaultCommand() {
-        setDefaultCommand(new Drive(Drive.State.OpenLoop));
-    }
-
     private Drivetrain(){
 
         /* Setting follower and master speed controllers */
@@ -74,7 +69,7 @@ public class Drivetrain implements Subsystem {
             motor.configVoltageCompSaturation(12, 10);
             motor.enableVoltageCompensation(true);
 
-            motor.setNeutralMode(NeutralMode.Coast);
+            motor.setNeutralMode(NeutralMode.Brake);
         });
 
         /* Encoder settings */
@@ -161,10 +156,10 @@ public class Drivetrain implements Subsystem {
             } else {
                 overPower = false;
                 angularPower = Math.abs(linearPercent) * curvaturePercent - quickStopAccumulator;
-
+                
                 if(quickStopAccumulator > 1) {
                     quickStopAccumulator -= 1.0;
-                } else if(quickStopAccumulator < 1) {
+                } else if(quickStopAccumulator < -1) {
                     quickStopAccumulator += 1.0;
                 } else {
                     quickStopAccumulator = 0.0;
@@ -173,6 +168,10 @@ public class Drivetrain implements Subsystem {
 
             double left = linearPercent + angularPower;
             double right = linearPercent - angularPower;
+
+            SmartDashboard.putNumber("l_curv", left);
+            SmartDashboard.putNumber("r_curv", right);
+
 
             // If rotation is overpowered, reduce both outputs to within acceptable range
             if (overPower) {

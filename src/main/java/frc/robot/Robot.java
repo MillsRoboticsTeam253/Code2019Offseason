@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Auto.DrivetrainOdometry;
 import frc.robot.Auto.LiveDashboard;
 import frc.robot.Misc.Constants;
@@ -37,12 +38,17 @@ public class Robot extends TimedRobot {
   Pose2d[] right_side_auto_waypoints = {new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
                             new Pose2d(3, 0, Rotation2d.fromDegrees(0))};
                       
-  
+  @Override
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
+  }
   
 
   @Override
   public void robotInit() {
+    System.out.println("Robot initialize");
     drivetrain = Drivetrain.getInstance();
+    CommandScheduler.getInstance().registerSubsystem(drivetrain);
     oi = OI.getInstance();
 
     falcondashboard = new LiveDashboard();
@@ -51,6 +57,7 @@ public class Robot extends TimedRobot {
     odometryNotifier = new Notifier(odometry);
     odometryNotifier.startPeriodic(0.02);
     
+    drivetrain.setDefaultCommand(new Drive(Drive.State.CheesyDrive));
   }
 
   @Override
@@ -60,7 +67,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    Scheduler.getInstance().run();
+    
   }
 
   @Override
@@ -69,7 +76,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    Scheduler.getInstance().run();
+    
   }
 
   @Override

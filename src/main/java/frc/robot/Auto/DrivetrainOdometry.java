@@ -21,6 +21,7 @@ public class DrivetrainOdometry extends DifferentialDriveOdometry implements Run
         super(kinematics, new Rotation2d(), initialPoseMeters);
         this.navX = navX;
         super.resetPosition(initialPoseMeters, new Rotation2d(Units.degreesToRadians(navX.getAngle())));
+
     }
 
     public DrivetrainOdometry(AHRS navX) {
@@ -31,6 +32,7 @@ public class DrivetrainOdometry extends DifferentialDriveOdometry implements Run
 
     @Override
     public void run() {
+        System.out.println("Odometry running");
         double leftVelocity = TicksPerDecisecondtoMPS(Drivetrain.getLeftEncVelocity());
         double rightVelocity = TicksPerDecisecondtoMPS(Drivetrain.getRightEncVelocity());
 

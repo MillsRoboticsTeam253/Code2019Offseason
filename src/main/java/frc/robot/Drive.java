@@ -48,11 +48,13 @@ public class Drive implements Command {
 
             SmartDashboard.putNumber("left", left);
             SmartDashboard.putNumber("right", right);
+            System.out.println(" Driving Openloop");
 
             Drivetrain.setOpenloop(left, right);
             break;
 
         case CheesyDrive:
+
             WheelState wheelSpeeds;
             if (throttle != 0) {
                 wheelSpeeds = Drivetrain.DifferentialDrive.curvatureDrive(throttle, turn, false);
@@ -63,6 +65,9 @@ public class Drive implements Command {
             left = wheelSpeeds.left * Constants.kTopSpeedMPS;
             right = wheelSpeeds.right * Constants.kTopSpeedMPS;
 
+            SmartDashboard.putNumber("leftvel" , left);
+            SmartDashboard.putNumber("rightvel" , right);
+
             /*
              * V_app = kS + kV * velocity + kA * acceleration; kS is multiplied by
              * signum(velocity), which returns 0 when desired velocity is 0
@@ -72,13 +77,17 @@ public class Drive implements Command {
             double rightff = (Constants.kS * Math.signum(right) + Constants.kV * right
                     + Constants.kA * (right - last_right) / 0.02) / 12;
 
-            left = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(left);
-            right = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(right);
-
             last_left = left;
             last_right = right;
 
-            Drivetrain.setClosedLoop(left, leftff, right, rightff);
+            left = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(left);
+            right = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(right);
+
+            SmartDashboard.putNumber("left" , left);
+            SmartDashboard.putNumber("leftff" , leftff);
+            SmartDashboard.putNumber("right" , right);
+            SmartDashboard.putNumber("rightff" , rightff);
+            //Drivetrain.setClosedLoop(left, leftff, right, rightff);
             break;
 
         }
