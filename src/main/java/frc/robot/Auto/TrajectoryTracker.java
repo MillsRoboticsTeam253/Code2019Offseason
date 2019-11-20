@@ -11,17 +11,17 @@ import frc.robot.Robot;
 
 public class TrajectoryTracker extends RamseteCommand {
 
-    static DifferentialDriveKinematics kinematics = Robot.kinematics;
+    static DifferentialDriveKinematics kinematics = Drivetrain.kinematics;
     static RamseteController follower = new RamseteController(2, 0.7);
     private double startTime;
     private Trajectory trajectory;
 
     public TrajectoryTracker(Trajectory trajectory) {
         super(trajectory, 
-              () -> Robot.odometry.getPoseMeters(), 
+              () -> Drivetrain.odometry.getPoseMeters(), 
               follower, 
               kinematics, 
-              (left, right) -> Drivetrain.setOpenLoop(left, right));
+              (left, right) -> Drivetrain.setClosedLoop(left, right));
         this.trajectory = trajectory;
         
     }
@@ -41,5 +41,11 @@ public class TrajectoryTracker extends RamseteCommand {
         Robot.falcondashboard.putPath(currentPose);
     }
 
+    @Override
+    public void end(boolean interrupted) {
+        super.end(interrupted);
+        Drivetrain.clearLastVelocities();
+        Robot.falcondashboard.endPath();
+    }
     
 }

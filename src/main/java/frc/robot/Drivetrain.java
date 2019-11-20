@@ -10,8 +10,14 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Misc.Constants;
@@ -37,11 +43,16 @@ public class Drivetrain implements Subsystem {
         return instance;
     }
 
-    // Closed Loop Modes
-    private static SimpleMotorFeedforward motorFeedForward = new SimpleMotorFeedforward(Constants.kS, Constants.kV, Constants.kA);
+    // Closed loop kinematics
+    public static SimpleMotorFeedforward motorFeedForward = new SimpleMotorFeedforward(Constants.kS, Constants.kV, Constants.kA);
+    public static DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.trackwidth);
+    public static DifferentialDriveOdometry odometry;
 
-    private static double last_left;
-    private static double last_right;
+    // Declaring variables to store acceleration values from last loop (to calculate acceleration)
+    private static double last_left = 0;
+    private static double last_right = 0;
+
+    private static AHRS navX;
 
     private Drivetrain(){
 
@@ -82,44 +93,56 @@ public class Drivetrain implements Subsystem {
 
         leftMotorA.config_kP(0, Constants.kPVelocity);
         rightMotorA.config_kP(0, Constants.kPVelocity);
+
+        odometry = new DifferentialDriveOdometry(kinematics, Rotation2d.fromDegrees(navX.getAngle()), new Pose2d());
     }
 
     /**
-     * Sets the drivetrain to run at a set speed (open loop percent voltage or closed loop velocity)
-     * 
-     * @param mode Mode to use (same as TalonSRX set() modes)
-     * @param left Value for left side of the drivetrain (in feet/sec for velocity mode)
-     * @param right Value for right side of the drivetrain (in feet/sec for velocity mode)
-     * @param type Secondary demand type
-     * @param auxFf Secondary demand value (should be [-1, 1])
+     * Handles the drivetrain's odometry and updating FalconDashboard
      */
-    public static void setOpenloop(double left, double right){
-        leftMotorA.set(ControlMode.PercentOutput, left);
-        rightMotorA.set(ControlMode.PercentOutput, right);
+    @Override
+    public void periodic() {
+        double leftVelocity = DifferentialDrive.TicksPerDecisecondtoMPS(Drivetrain.getLeftEncVelocity());
+        double rightVelocity = DifferentialDrive.TicksPerDecisecondtoMPS(Drivetrain.getRightEncVelocity());
 
+        odometry.update(Rotation2d.fromDegrees(navX.getAngle()), 
+                        new DifferentialDriveWheelSpeeds(leftVelocity, rightVelocity));
+        Robot.falcondashboard.putOdom(odometry.getPoseMeters());
     }
 
+    /**
+     * Sets odometry (used to set the position and angle offset at the beginning of autonomous)
+     * 
+     * @param poseMeters  Global pose of robot
+     * @param gyroAngle   Angle robot is facing 
+     */
+    public void setOdometry(Pose2d poseMeters, Rotation2d gyroAngle){
+        odometry.resetPosition(poseMeters, gyroAngle);
+    }
+
+    /**
+     * Drives the robot open loop.
+     * 
+     * @param left   Percent of max output to set left side of drivetrain to [-1, 1]
+     * @param right  Percent of max output to set right side of drivetrain to [-1, 1]
+     */
     public static void setOpenLoop(Double left, Double right){
         leftMotorA.set(ControlMode.PercentOutput, left.doubleValue());
         rightMotorA.set(ControlMode.PercentOutput, right.doubleValue());
     }
 
-    // Inputs are ticks/ds here
-    public static void setClosedLoop(double left, double leftFf, double right, double rightFf) {
-        leftMotorA.set(ControlMode.Velocity, left, DemandType.ArbitraryFeedForward, leftFf);
-        rightMotorA.set(ControlMode.Velocity, right, DemandType.ArbitraryFeedForward, rightFf);
-
-        SmartDashboard.putNumber("Left Control Effort", leftMotorA.getMotorOutputVoltage());
-        SmartDashboard.putNumber("Right Control Effort", rightMotorA.getMotorOutputVoltage());
-
-        SmartDashboard.putNumber("Left Error", leftMotorA.getClosedLoopError());
-        SmartDashboard.putNumber("Right Error", rightMotorA.getClosedLoopError());
-    }
-
-    // Inputs are m/s here
+    /**
+     * Handles all kinematics for closed loop driving modes. 
+     * 
+     * @param left   Velocity to set left side of the drivetrain to (meters/second)
+     * @param right  Velocity to set right side of the drivetrain to (meters/second)
+     */
     public static void setClosedLoop(Double left, Double right) {
         double accelLeft = (left-last_left)/0.02;
         double accelRight = (right-last_right)/0.02;
+
+        last_left = left;
+        last_right = right;
 
         double leftff = motorFeedForward.calculate(left, accelLeft)/12;
         double rightff = motorFeedForward.calculate(right, accelRight)/12;
@@ -130,16 +153,73 @@ public class Drivetrain implements Subsystem {
         setClosedLoop(left, leftff, right, rightff);
     }
 
-
-    static class WheelState {
-        public double left, right;
-        public WheelState(double left, double right){
-            this.left = left;
-            this.right = right;
-        }
+    /**
+     * Zeroes the last loop velocities used to calculate acceleration between closed loop driving modes
+     */
+    public static void clearLastVelocities(){
+        last_left = 0;
+        last_right = 0;
     }
 
-    static class DifferentialDrive {
+    /**
+     * Zeroes the encoders
+     */
+    public void resetEncoders(){
+        Arrays.asList(leftMotorA, rightMotorA).forEach(motor -> motor.setSelectedSensorPosition(0));
+    }
+
+    // Returns the current measurement of the left drivetrain encoder
+    public static double getLeftEnc(){
+        return leftMotorA.getSelectedSensorPosition();
+    }
+
+    // Returns the current measurement of the right drivetrain encoder 
+    public static double getRightEnc(){
+        return rightMotorA.getSelectedSensorPosition();
+    }
+
+    // Returns the current velocity measurement of the left drivetrain encoder
+    public static double getLeftEncVelocity() {
+        return leftMotorA.getSelectedSensorVelocity();
+    }
+
+    // Returns the current velocity measurement of the right drivetrain encoder
+    public static double getRightEncVelocity() {
+        return rightMotorA.getSelectedSensorVelocity();
+    }
+
+    // Returns the current measurement of the left drivetrain encoder in feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels
+    public static double getLeftFeet(){
+        return ((leftMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
+    }
+
+    // Returns the current measurement of the right drivetrain encoder in feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels
+    public static double getRightFeet(){
+        return ((rightMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
+    }
+
+    /**
+     * Function used to set the talon speeds in closed loop. Called by setClosedLoop(Double, Double)
+     * after calculation of kinematics feedforwards and talon native speed units is complete
+     * 
+     * @param left     Velocity to set left side of drivetrain to in talon units per decisecond
+     * @param leftFf   Feedforward for left side of drivetrain in Volts
+     * @param right    Velocity to set right side of drivetrain to in talon units per decisecond
+     * @param rightFf  Feedforward for right side of drivetrain in Volts
+     */
+    private static void setClosedLoop(double left, double leftFf, double right, double rightFf) {
+        leftMotorA.set(ControlMode.Velocity, left, DemandType.ArbitraryFeedForward, leftFf);
+        rightMotorA.set(ControlMode.Velocity, right, DemandType.ArbitraryFeedForward, rightFf);
+
+        SmartDashboard.putNumber("Left Control Effort", leftMotorA.getMotorOutputVoltage());
+        SmartDashboard.putNumber("Right Control Effort", rightMotorA.getMotorOutputVoltage());
+
+        SmartDashboard.putNumber("Left Error", leftMotorA.getClosedLoopError());
+        SmartDashboard.putNumber("Right Error", rightMotorA.getClosedLoopError());
+    }
+
+    // Static class to handle conversion from joystick inputs into left and right side outputs
+    public static class DifferentialDrive {
         private static double quickStopAccumulator = 0.0;
         public static WheelState curvatureDrive(double linearPercent, double curvaturePercent, boolean isQuickTurn){
             final double angularPower;
@@ -221,35 +301,13 @@ public class Drivetrain implements Subsystem {
         }
     }
 
-    public void resetEncoders(){
-        Arrays.asList(leftMotorA, rightMotorA).forEach(motor -> motor.setSelectedSensorPosition(0));
+    // Static class to contain the speeds of each side of the drivetrain
+    public static class WheelState {
+        public double left, right;
+        public WheelState(double left, double right){
+            this.left = left;
+            this.right = right;
+        }
     }
-
-    // Returns the current measurement of the left drivetrain encoder
-    public static double getLeftEnc(){
-        return leftMotorA.getSelectedSensorPosition();
-    }
-
-    // Returns the current measurement of the right drivetrain encoder 
-    public static double getRightEnc(){
-        return rightMotorA.getSelectedSensorPosition();
-    }
-
-    public static double getLeftEncVelocity() {
-        return leftMotorA.getSelectedSensorVelocity();
-    }
-
-    public static double getRightEncVelocity() {
-        return rightMotorA.getSelectedSensorVelocity();
-    }
-
-    // Returns the current measurement of the left drivetrain encoder in feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels
-    public static double getLeftFeet(){
-        return ((leftMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
-    }
-
-    // Returns the current measurement of the right drivetrain encoder in feet, assuming 1024 encoder ticks per rotation and 4 inch diameter wheels
-    public static double getRightFeet(){
-        return ((rightMotorA.getSelectedSensorPosition() / 1024.0) * 4*Math.PI) / 12;
-    }
+    
 }

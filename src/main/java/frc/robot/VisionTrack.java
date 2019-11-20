@@ -26,9 +26,6 @@ public class VisionTrack implements Command {
     private PDController aim;
     private PDController dist;
 
-    private double last_left = 0;
-    private double last_right = 0;
-
     Subsystem[] requirements = {Robot.drivetrain};
 
     public VisionTrack() {
@@ -86,23 +83,7 @@ public class VisionTrack implements Command {
         left = wheelspeeds.left * Constants.kTopSpeedMPS;
         right = wheelspeeds.left * Constants.kTopSpeedMPS;
 
-        /*
-         * V_app = kS + kV * velocity + kA * acceleration; kS is multiplied by
-         * signum(velocity), which returns 0 when desired velocity is 0
-         */
-        double leftFf = (Constants.kS * Math.signum(left) + Constants.kV * left
-                + Constants.kA * (left - last_left) / 0.02) / 12;
-        double rightFf = (Constants.kS * Math.signum(right) + Constants.kV * right
-                + Constants.kA * (right - last_right) / 0.02) / 12;
-
-        last_left = left;
-        last_right = right;
-
-        // Converting velocities to Talon native velocity units
-        left = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(left);
-        right = Drivetrain.DifferentialDrive.MPStoTicksPerDecisecond(right);
-
-        Drivetrain.setClosedLoop(left, leftFf, right, rightFf);
+        Drivetrain.setClosedLoop(left, right);
 
     }
 
@@ -110,8 +91,10 @@ public class VisionTrack implements Command {
         return false;
     }
 
-    protected void end() {
-        Drivetrain.setOpenloop(0, 0);
+    @Override
+    public void end(boolean interrupted) {
+        Drivetrain.clearLastVelocities();
+        Drivetrain.setOpenLoop(0.0, 0.0);
         Robot.oi.setPipeline(VisionPipeline.DRIVER);
     }
 

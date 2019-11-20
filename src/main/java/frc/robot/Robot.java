@@ -7,17 +7,21 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Notifier;
+import java.util.List;
+
+import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Auto.DrivetrainOdometry;
 import frc.robot.Auto.LiveDashboard;
+import frc.robot.Auto.TrajectoryTracker;
 import frc.robot.Misc.Constants;
 import frc.robot.Misc.OI;
 
@@ -26,16 +30,15 @@ public class Robot extends TimedRobot {
   public static Drivetrain drivetrain;
   public static LiveDashboard falcondashboard;
   public static OI oi;
+  public static AHRS navX;
 
-  public static DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Constants.trackwidth);
-
-  public static DrivetrainOdometry odometry;
-  private static Notifier odometryNotifier;
-
-  TrajectoryConfig config = new TrajectoryConfig(Constants.kTopSpeedMPS-1, 3);
+  TrajectoryConfig config = new TrajectoryConfig(Constants.kTopSpeedMPS, 20) // These numbers literally do not matter 
+    .addConstraint(new DifferentialDriveVoltageConstraint(Drivetrain.motorFeedForward, 
+                                                          Drivetrain.kinematics, 
+                                                          11));
   
   Trajectory right_side_auto;
-  Pose2d[] right_side_auto_waypoints = {new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
+  Pose2d[] points = {new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
                             new Pose2d(3, 0, Rotation2d.fromDegrees(0))};
                       
   @Override
@@ -46,23 +49,21 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    System.out.println("Robot initialize");
+    navX = new AHRS(Port.kMXP); // Initialized first because Drivetrain requires the gyro for initialiation
+
     drivetrain = Drivetrain.getInstance();
-    CommandScheduler.getInstance().registerSubsystem(drivetrain);
     oi = OI.getInstance();
 
     falcondashboard = new LiveDashboard();
-
-    kinematics = new DifferentialDriveKinematics(Constants.trackwidth);
-    odometryNotifier = new Notifier(odometry);
-    odometryNotifier.startPeriodic(0.02);
+    right_side_auto = TrajectoryGenerator.generateTrajectory(List.of(points), config);
     
-    drivetrain.setDefaultCommand(new Drive(Drive.State.CheesyDrive));
   }
 
   @Override
   public void autonomousInit() {
-    
+    // Begins odometry at the beginning of autonomous period
+    CommandScheduler.getInstance().registerSubsystem(drivetrain);
+    CommandScheduler.getInstance().schedule(new TrajectoryTracker(right_side_auto));
   }
 
   @Override
