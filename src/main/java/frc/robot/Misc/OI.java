@@ -1,4 +1,4 @@
-package frc.robot.Misc;
+package frc.robot.misc;
 
 import com.kauailabs.navx.frc.AHRS;
 

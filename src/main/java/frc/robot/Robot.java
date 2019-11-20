@@ -20,72 +20,65 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConstraint;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Auto.LiveDashboard;
-import frc.robot.Auto.TrajectoryTracker;
-import frc.robot.Misc.Constants;
-import frc.robot.Misc.OI;
+import frc.robot.auto.AutonomousContainer;
+import frc.robot.auto.LiveDashboard;
+import frc.robot.auto.TrajectoryTracker;
+import frc.robot.misc.Constants;
+import frc.robot.misc.OI;
+import frc.robot.subsystems.drive.Drivetrain;
 
 public class Robot extends TimedRobot {
 
-  public static Drivetrain drivetrain;
-  public static LiveDashboard falcondashboard;
-  public static OI oi;
-  public static AHRS navX;
+    public static Drivetrain drivetrain;
+    public static LiveDashboard falcondashboard;
+    public static OI oi;
+    public static AHRS navX;
 
-  TrajectoryConfig config = new TrajectoryConfig(Constants.kTopSpeedMPS, 20) // These numbers literally do not matter 
-    .addConstraint(new DifferentialDriveVoltageConstraint(Drivetrain.motorFeedForward, 
-                                                          Drivetrain.kinematics, 
-                                                          11));
-  
-  Trajectory right_side_auto;
-  Pose2d[] points = {new Pose2d(0, 0, Rotation2d.fromDegrees(0)),
-                            new Pose2d(3, 0, Rotation2d.fromDegrees(0))};
-                      
-  @Override
-  public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
-  }
-  
-
-  @Override
-  public void robotInit() {
-    navX = new AHRS(Port.kMXP); // Initialized first because Drivetrain requires the gyro for initialiation
-
-    drivetrain = Drivetrain.getInstance();
-    oi = OI.getInstance();
-
-    falcondashboard = new LiveDashboard();
-    right_side_auto = TrajectoryGenerator.generateTrajectory(List.of(points), config);
     
-  }
 
-  @Override
-  public void autonomousInit() {
-    // Begins odometry at the beginning of autonomous period
-    CommandScheduler.getInstance().registerSubsystem(drivetrain);
-    CommandScheduler.getInstance().schedule(new TrajectoryTracker(right_side_auto));
-  }
+    @Override
+    public void robotPeriodic() {
+        CommandScheduler.getInstance().run();
+    }
 
-  @Override
-  public void autonomousPeriodic() {
-    
-  }
+    @Override
+    public void robotInit() {
+        navX = new AHRS(Port.kMXP); // Initialized first because Drivetrain requires the gyro for initialiation
 
-  @Override
-  public void teleopInit() {
-  }
+        drivetrain = Drivetrain.getInstance();
+        oi = OI.getInstance();
 
-  @Override
-  public void teleopPeriodic() {
-    
-  }
+        falcondashboard = new LiveDashboard();
 
-  @Override
-  public void testInit() {
-  }
+    }
 
-  @Override
-  public void testPeriodic() {
-  }
+    @Override
+    public void autonomousInit() {
+        // Begins odometry at the beginning of autonomous period
+        CommandScheduler.getInstance().registerSubsystem(drivetrain);
+        CommandScheduler.getInstance().schedule(new TrajectoryTracker(AutonomousContainer.getInstance().getAutonomousTrajectory()));
+    }
+
+    @Override
+    public void autonomousPeriodic() {
+
+    }
+
+    @Override
+    public void teleopInit() {
+    }
+
+    @Override
+    public void teleopPeriodic() {
+
+    }
+
+    @Override
+    public void testInit() {
+    }
+
+    @Override
+    public void testPeriodic() {
+    }
 
 }

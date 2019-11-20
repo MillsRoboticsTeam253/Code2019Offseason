@@ -1,4 +1,4 @@
-package frc.robot.Misc;
+package frc.robot.misc;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;

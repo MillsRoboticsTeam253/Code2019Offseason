@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems.drive;
 
 import java.util.Set;
 
@@ -6,12 +6,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Robot;
-import frc.robot.Drivetrain.WheelState;
-import frc.robot.Misc.Constants;
-import frc.robot.Misc.OI;
-import frc.robot.Misc.PDController;
-import frc.robot.Misc.OI.LEDMode;
-import frc.robot.Misc.OI.VisionPipeline;
+import frc.robot.misc.Constants;
+import frc.robot.misc.OI;
+import frc.robot.misc.PDController;
+import frc.robot.misc.OI.LEDMode;
+import frc.robot.misc.OI.VisionPipeline;
+import frc.robot.subsystems.drive.Drivetrain.WheelState;
 
 public class VisionTrack implements Command {
 
@@ -26,10 +26,16 @@ public class VisionTrack implements Command {
     private PDController aim;
     private PDController dist;
 
+    private VisionPipeline pipeline;
+
     Subsystem[] requirements = {Robot.drivetrain};
 
-    public VisionTrack() {
+    public VisionTrack(VisionPipeline pipeline){
+        this.pipeline = pipeline;
+    }
 
+    public VisionTrack(){
+        this.pipeline = VisionPipeline.VISION;
     }
 
     @Override
@@ -46,7 +52,7 @@ public class VisionTrack implements Command {
         SmartDashboard.putNumber("kDDist", kDDist);
 
         Robot.oi.setLEDMode(LEDMode.ON); // Turns on Limelight LEDs
-        Robot.oi.setPipeline(VisionPipeline.VISION); // Sets pipeline to vision pipeline
+        Robot.oi.setPipeline(pipeline); // Sets pipeline to vision pipeline
         Robot.oi.setCamMode(); // Sets camera to vision mode
 
     }
