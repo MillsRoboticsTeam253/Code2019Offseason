@@ -16,6 +16,7 @@ public class Drive implements Command {
 
     public Drive(State state) {
         this.state = state;
+        
     }
 
     Subsystem[] requirements = {Robot.drivetrain};

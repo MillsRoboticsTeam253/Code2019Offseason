@@ -12,6 +12,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Misc.Constants;
 
@@ -51,8 +53,6 @@ public class Drivetrain implements Subsystem {
     // Declaring variables to store acceleration values from last loop (to calculate acceleration)
     private static double last_left = 0;
     private static double last_right = 0;
-
-    private static AHRS navX;
 
     private Drivetrain(){
 
@@ -94,7 +94,8 @@ public class Drivetrain implements Subsystem {
         leftMotorA.config_kP(0, Constants.kPVelocity);
         rightMotorA.config_kP(0, Constants.kPVelocity);
 
-        odometry = new DifferentialDriveOdometry(kinematics, Rotation2d.fromDegrees(navX.getAngle()), new Pose2d());
+        //navX = Robot.navX;
+        //odometry = new DifferentialDriveOdometry(kinematics, Rotation2d.fromDegrees(navX.getAngle()), new Pose2d());
     }
 
     /**
@@ -102,12 +103,12 @@ public class Drivetrain implements Subsystem {
      */
     @Override
     public void periodic() {
-        double leftVelocity = DifferentialDrive.TicksPerDecisecondtoMPS(Drivetrain.getLeftEncVelocity());
+        /*double leftVelocity = DifferentialDrive.TicksPerDecisecondtoMPS(Drivetrain.getLeftEncVelocity());
         double rightVelocity = DifferentialDrive.TicksPerDecisecondtoMPS(Drivetrain.getRightEncVelocity());
 
         odometry.update(Rotation2d.fromDegrees(navX.getAngle()), 
                         new DifferentialDriveWheelSpeeds(leftVelocity, rightVelocity));
-        Robot.falcondashboard.putOdom(odometry.getPoseMeters());
+        Robot.falcondashboard.putOdom(odometry.getPoseMeters());*/
     }
 
     /**

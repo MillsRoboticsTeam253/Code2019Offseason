@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveVoltageConst
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Auto.LiveDashboard;
 import frc.robot.Auto.TrajectoryTracker;
+import frc.robot.Drive.State;
 import frc.robot.Misc.Constants;
 import frc.robot.Misc.OI;
 
@@ -30,7 +31,7 @@ public class Robot extends TimedRobot {
   public static Drivetrain drivetrain;
   public static LiveDashboard falcondashboard;
   public static OI oi;
-  public static AHRS navX;
+  public static AHRS navX = new AHRS(edu.wpi.first.wpilibj.I2C.Port.kMXP);
 
   TrajectoryConfig config = new TrajectoryConfig(Constants.kTopSpeedMPS, 20) // These numbers literally do not matter 
     .addConstraint(new DifferentialDriveVoltageConstraint(Drivetrain.motorFeedForward, 
@@ -49,13 +50,16 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    navX = new AHRS(Port.kMXP); // Initialized first because Drivetrain requires the gyro for initialiation
+    // Initialized first because Drivetrain requires the gyro for initialiation
 
     drivetrain = Drivetrain.getInstance();
+    CommandScheduler.getInstance().registerSubsystem(drivetrain);
     oi = OI.getInstance();
 
     falcondashboard = new LiveDashboard();
     right_side_auto = TrajectoryGenerator.generateTrajectory(List.of(points), config);
+
+    drivetrain.setDefaultCommand(new Drive(State.OpenLoop));
     
   }
 
