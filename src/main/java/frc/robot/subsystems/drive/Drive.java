@@ -88,7 +88,7 @@ public class Drive implements Command {
         Drivetrain.setOpenLoop(0.0, 0.0);
     }
 
-    protected static enum State {
+    public static enum State {
         OpenLoop, CheesyDrive
     }
 

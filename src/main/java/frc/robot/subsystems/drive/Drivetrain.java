@@ -85,7 +85,11 @@ public class Drivetrain implements Subsystem {
             motor.configVoltageCompSaturation(12, 10);
             motor.enableVoltageCompensation(true);
 
+            motor.configClosedloopRamp(0.05, 0);
+
             motor.setNeutralMode(NeutralMode.Brake);
+
+            SmartDashboard.putNumber("kP", Constants.kPVelocity);
         });
 
         /* Encoder settings */
@@ -96,9 +100,7 @@ public class Drivetrain implements Subsystem {
         leftMotorA.setSensorPhase(false);
         rightMotorA.setSensorPhase(false);
 
-        leftMotorA.config_kP(0, Constants.kPVelocity);
-        rightMotorA.config_kP(0, Constants.kPVelocity);
-
+        navX = Robot.navX;
         odometry = new DifferentialDriveOdometry(kinematics, Rotation2d.fromDegrees(navX.getAngle()), new Pose2d());
     }
 
@@ -107,6 +109,11 @@ public class Drivetrain implements Subsystem {
      */
     @Override
     public void periodic() {
+        double kP = SmartDashboard.getNumber("kP", Constants.kPVelocity);
+
+        leftMotorA.config_kP(0, kP);
+        rightMotorA.config_kP(0, kP);
+
         double leftVelocity = DifferentialDrive.TicksPerDecisecondtoMPS(Drivetrain.getLeftEncVelocity());
         double rightVelocity = DifferentialDrive.TicksPerDecisecondtoMPS(Drivetrain.getRightEncVelocity());
 

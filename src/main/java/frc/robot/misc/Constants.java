@@ -21,11 +21,11 @@ public class Constants {
     public static final double acceptableDistAdjustError = 0.05; // Minimum speed value to curvature drive instead of turn in place to align [0,1]
 
     /* Cheesydrive Settings */
-    public static final double kS = 1.33; // Minimum voltage required to overcome static friction (V)
-    public static final double kV = 1.9717847769; // Speed per volt (volt seconds per meter)
-    public static final double kA = 0.51837270341; // Acceleration per volt (volt seconds squared per meter)
+    public static final double kS = 1.32; // Minimum voltage required to overcome static friction (V)
+    public static final double kV = 1.94; // Speed per volt (volt seconds per meter)
+    public static final double kA = 0.67; // Acceleration per volt (volt seconds squared per meter)
 
-    public static final double kPVelocity = 11.4;
+    public static final double kPVelocity = 6.81;
 
     public static final double kTopSpeedMPS = 5.41134109818;
     public static final double kQuickStopThreshold = 0.2;

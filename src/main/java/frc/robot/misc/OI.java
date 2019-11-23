@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.SPI.Port;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import frc.robot.Robot;
 
 public class OI {
     private static XboxController xboxcontroller;
@@ -45,8 +46,8 @@ public class OI {
     }
 
     public OI() {
+        navX = Robot.navX;
         limelight = NetworkTableInstance.getDefault().getTable("limelight");
-        navX = new AHRS(Port.kMXP, (byte)200); // Overriding navX default update rate with a 200hz update rate
         xboxcontroller = new XboxController(0);
 
         ButtonA = new JoystickButton(xboxcontroller, 1);

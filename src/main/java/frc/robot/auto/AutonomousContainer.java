@@ -14,10 +14,11 @@ import frc.robot.subsystems.drive.Drivetrain;
 public class AutonomousContainer {
     private static TrajectoryConfig config = new TrajectoryConfig(Constants.kTopSpeedMPS, 20) // These numbers literally do not matter
             .addConstraint(
-                    new DifferentialDriveVoltageConstraint(Drivetrain.motorFeedForward, Drivetrain.kinematics, 11));
+                    new DifferentialDriveVoltageConstraint(Drivetrain.motorFeedForward, Drivetrain.kinematics, 9));
 
     public static Trajectory right_side_auto;
-    private static Pose2d[] points = { new Pose2d(0, 0, Rotation2d.fromDegrees(0)), new Pose2d(3, 0, Rotation2d.fromDegrees(0)) };
+    private static Pose2d[] points = { new Pose2d(0, 0, Rotation2d.fromDegrees(0)), 
+                                       new Pose2d(3.929, 2.084, Rotation2d.fromDegrees(90)) };
 
     private AutonomousContainer() {
         right_side_auto = TrajectoryGenerator.generateTrajectory(List.of(points), config);

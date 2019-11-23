@@ -28,7 +28,9 @@ public class TrajectoryTracker extends RamseteCommand {
 
     @Override 
     public void initialize() {
+        super.initialize();
         startTime = Timer.getFPGATimestamp();
+        System.out.println("lol this is auto starting");
     }
 
     @Override
@@ -36,8 +38,11 @@ public class TrajectoryTracker extends RamseteCommand {
         super.execute();
         double currentTime = Timer.getFPGATimestamp();
 
+        if(currentTime - startTime > 2) System.out.println("lol this is auto");
+
         Trajectory.State currentState = trajectory.sample(currentTime-startTime);
         Pose2d currentPose = currentState.poseMeters;
+
         Robot.falcondashboard.putPath(currentPose);
     }
 
@@ -46,6 +51,8 @@ public class TrajectoryTracker extends RamseteCommand {
         super.end(interrupted);
         Drivetrain.clearLastVelocities();
         Robot.falcondashboard.endPath();
+
+        System.out.println("lol this is auto ending");
     }
     
 }
